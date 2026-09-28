@@ -1,11 +1,10 @@
 // Opens the built school island (dist/school.html) in a hidden Chrome and plays a whole game by itself:
 // walks to every orange flower, takes them to the garden, and checks the "garden is blooming" card.
 // Run after `npm run build`:  node tools/school_check.mjs [width] [height] [mobile]
-import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import os from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { launchChrome, pageUrl } from './cdp.mjs';
 
 const W = +(process.argv[2] || 1280);
 const H = +(process.argv[3] || 800);
@@ -13,13 +12,8 @@ const MOBILE = process.argv[4] === 'mobile';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.join(root, 'check');
 fs.mkdirSync(out, { recursive: true });
-const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'garden-'));
 const port = 9334;
-const chrome = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', [
-  '--headless=new', `--remote-debugging-port=${port}`, '--allow-file-access-from-files',
-  '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required',
-  `--user-data-dir=${profile}`, `--window-size=${W},${H}`, 'about:blank',
-], { stdio: 'ignore' });
+const chrome = launchChrome(port, W, H);
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let target;
@@ -56,7 +50,7 @@ if (MOBILE) {
   await send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: 2, mobile: true });
   await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
 }
-const url = 'file:///' + path.join(root, 'dist', 'school.html').replace(/\\/g, '/').replace(/ /g, '%20') + '?debug';
+const url = pageUrl('school.html');
 await send('Page.navigate', { url });
 await sleep(4000);
 console.log('title card:', await evaluate(`document.getElementById('play').textContent`));

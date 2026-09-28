@@ -3,20 +3,46 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Chrome on the PC (or a Mac), or the Chromium that Playwright keeps on Linux. CHROME=path picks another.
+export function findChrome() {
+  const found = [
+    process.env.CHROME,
+    'C:/Program Files/Google/Chrome/Application/chrome.exe',
+    'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    path.join(process.env.PLAYWRIGHT_BROWSERS_PATH || '/opt/pw-browsers', 'chromium'),
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium',
+  ].find((p) => p && fs.existsSync(p));
+  if (!found) throw new Error('Chrome not found. Set CHROME to the path of chrome.exe (or chromium).');
+  return found;
+}
+
+// start a hidden Chrome that the test scripts drive through its debugging port
+export function launchChrome(port, width, height) {
+  const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'islands-'));
+  const args = [
+    '--headless=new', `--remote-debugging-port=${port}`, '--allow-file-access-from-files',
+    '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required',
+    `--user-data-dir=${profile}`, `--window-size=${width},${height}`,
+  ];
+  // cloud containers run as root with a small /dev/shm, which Chrome's sandbox and memory use don't like
+  if (process.platform === 'linux') args.push('--no-sandbox', '--disable-dev-shm-usage');
+  return spawn(findChrome(), [...args, 'about:blank'], { stdio: 'ignore' });
+}
+
+// a built page in dist/, with ?debug so the scripts can reach window.game
+export const pageUrl = (page) => pathToFileURL(path.join(root, 'dist', page)).href + '?debug';
+
 export async function openPage(page, { width = 1280, height = 800, mobile = false, port = 9335 } = {}) {
   const out = path.join(root, 'check');
   fs.mkdirSync(out, { recursive: true });
-  const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'islands-'));
-  const chrome = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', [
-    '--headless=new', `--remote-debugging-port=${port}`, '--allow-file-access-from-files',
-    '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required',
-    `--user-data-dir=${profile}`, `--window-size=${width},${height}`, 'about:blank',
-  ], { stdio: 'ignore' });
+  const chrome = launchChrome(port, width, height);
   let target;
   for (let i = 0; i < 50 && !target; i++) {
     await sleep(200);
@@ -46,8 +72,7 @@ export async function openPage(page, { width = 1280, height = 800, mobile = fals
     await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 2, mobile: true });
     await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
   }
-  const url = 'file:///' + path.join(root, 'dist', page).replace(/\\/g, '/').replace(/ /g, '%20') + '?debug';
-  await send('Page.navigate', { url });
+  await send('Page.navigate', { url: pageUrl(page) });
   await sleep(4000);
   const close = () => { ws.close(); chrome.kill(); };
   return { evaluate, shot, errors, close };

@@ -1,10 +1,9 @@
 // Opens the built game (dist/) in a hidden Chrome, presses Play, taps the island, and saves screenshots.
 // Run after `npm run build`:  node tools/headless_check.mjs [width] [height] [mobile]
-import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import os from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { launchChrome, pageUrl } from './cdp.mjs';
 
 const W = +(process.argv[2] || 1280);
 const H = +(process.argv[3] || 800);
@@ -12,13 +11,8 @@ const MOBILE = process.argv[4] === 'mobile';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.join(root, 'check');
 fs.mkdirSync(out, { recursive: true });
-const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'ducks-'));
 const port = 9333;
-const chrome = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', [
-  '--headless=new', `--remote-debugging-port=${port}`, '--allow-file-access-from-files',
-  '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required',
-  `--user-data-dir=${profile}`, `--window-size=${W},${H}`, 'about:blank',
-], { stdio: 'ignore' });
+const chrome = launchChrome(port, W, H);
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let target;
@@ -69,7 +63,7 @@ if (MOBILE) {
   await send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: 2, mobile: true });
   await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
 }
-const url = 'file:///' + path.join(root, 'dist', 'index.html').replace(/\\/g, '/').replace(/ /g, '%20') + '?debug';
+const url = pageUrl('index.html');
 await send('Page.navigate', { url });
 await sleep(4000);
 console.log('play button:', await evaluate(`document.getElementById('play').textContent + ' disabled=' + document.getElementById('play').disabled`));
