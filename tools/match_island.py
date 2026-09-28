@@ -156,10 +156,11 @@ def segment(img, stairs_boxes=()):
     wl, _ = ndimage.label(white)
     touching = np.unique(wl[ndimage.binary_dilation(blue, iterations=2) & white])
     sea = blue | np.isin(wl, touching[touching > 0])
-    sea = ndimage.binary_closing(sea, iterations=2)
+    sea = ndimage.binary_closing(sea, iterations=2, border_value=1)   # beyond the picture is sea too
+    # every island in the picture (the islets picture has several); specks in the sea don't count
     lab, n = ndimage.label(~sea)
     sizes = ndimage.sum(~sea, lab, range(1, n + 1))
-    land = lab == 1 + int(np.argmax(sizes))
+    land = np.isin(lab, 1 + np.flatnonzero(sizes >= max(2000, 0.02 * sizes.max())))
     land = ndimage.binary_fill_holes(land)
     greenish = (h > 55) & (h < 150) & (s > 0.2) & (v > 0.15)
     yellow = (h >= 48) & (h <= 68) & (s > 0.7) & (v > 0.8)

@@ -186,7 +186,8 @@ def main():
     nm = materials(new)
     _, s_new, v_new = hsv(new)
     foam = (v_new > 0.88) & (s_new < 0.12)
-    shore_water = ndimage.distance_transform_edt(nm["water"] | foam) <= 100
+    all_water = nm["water"] | foam                      # for finding the land: every bit of water
+    shore_water = ndimage.distance_transform_edt(all_water) <= 100
     nm["water"] &= shore_water
     if alpha is not None:
         nm["water"] &= alpha >= 128      # only the piece's own water, not the plain sea shown through it
@@ -218,14 +219,18 @@ def main():
                 say(True, f"{NAMES[key]} texture: new {b['tex']:.1f} vs home {a['tex']:.1f}")
 
     # ---- size and sea around the island
-    land = ndimage.binary_opening(~(nm["water"] | ~shore_water) & ~foam, iterations=2)
+    land = ndimage.binary_opening(~all_water, iterations=2)
     lab, n = ndimage.label(land)
     sizes = ndimage.sum(land, lab, range(1, n + 1))
-    big = lab == 1 + int(np.argmax(sizes))
-    ys, xs = np.nonzero(big)
+    keep = 1 + np.flatnonzero(sizes >= max(2000, 0.02 * sizes.max()))    # every island, not specks
+    biggest = lab == 1 + int(np.argmax(sizes))
+    by, bx = np.nonzero(biggest)
+    ys, xs = np.nonzero(np.isin(lab, keep))
     margin = min(xs.min(), ys.min(), W - 1 - xs.max(), H - 1 - ys.max())
-    say(margin >= 80, f"island {xs.max() - xs.min() + 1} x {ys.max() - ys.min() + 1}, closest sea edge {margin} px (need 80+)")
-    specks = int(sum(1 for s in sizes if s > 200)) - 1
+    size = f"{bx.max() - bx.min() + 1} x {by.max() - by.min() + 1}"
+    what = f"island {size}" if len(keep) == 1 else f"{len(keep)} islands, the biggest {size}"
+    say(margin >= 80, f"{what}, closest sea edge {margin} px (need 80+)")
+    specks = int(sum(1 for a in sizes if 200 < a < max(2000, 0.02 * sizes.max())))
     if specks > 0:
         say(None, f"{specks} other patch(es) of land or colour in the sea")
 
