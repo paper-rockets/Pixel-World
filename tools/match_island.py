@@ -15,12 +15,15 @@ Everything Codex drew keeps its shape: the coastline, cliffs, paths, stairs and 
 Not handled yet: water inside an island (ponds, streams) is taken for land, and ground kinds the
 home island doesn't have (like tilled soil) are taken for the nearest kind it knows.
 
-Writes public/world/islands/<name>.png: the island's piece of the big map, the same size as the
-picture from Codex, with its land and its shore water, fading out by 80 px from the shore. Also
+Writes public/world/islands/<name>.png: the island's piece of the big map, with its land and its
+shore water, fading out by 80 px from the shore. If the land comes closer than that to the picture's
+edge, sea is added all round, and <name>.json says by how much (`pad`: the piece's top-left corner in
+the big map moves that much up and left). Also
 writes check/match_<name>.png (before and after, next to the home island). Check the result with
 tools/review_island.py. Add --masks to see which kind of ground each pixel was taken for
 (check/masks_<name>.png), when setting up a new island in ISLANDS.
 """
+import json
 import re
 import sys
 from pathlib import Path
@@ -32,7 +35,8 @@ from scipy import ndimage
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
-from review_island import HOME_FILE, SEA as SEA_BG, hsv, materials, text_font  # noqa: E402
+from review_island import (HOME_BOXES, HOME_FILE, SEA as SEA_BG, box_mask, hsv, materials,  # noqa: E402
+                           text_font, texture)
 from world_paint import bayer, fbm, hexrgb  # noqa: E402
 
 OUT = ROOT / "public" / "world" / "islands"
@@ -47,7 +51,12 @@ ISLANDS = {
         "widen_path": 14,
         "stairs_width": 80,
     },
+    "se_meadow": {
+        "stairs": [(748, 738, 860, 822)],   # already about 110 px wide
+        "widen_path": 8,
+    },
 }
+MARGIN = 84   # sea needed around the land for the piece's water to fade out (80 px) without being cut
 
 # Plain ground on the home island to take each kind's colours from (x0, y0, x1, y1), picked by eye.
 HOME_SAMPLES = {
@@ -349,7 +358,7 @@ def match(img, home, stairs_boxes=(), widen=0, stairs_width=0):
     # sewn from its open lawns and paths; clover, edges and flowers stay as Codex drew them
     ys, xs = np.nonzero(seg["land"])
     y0, x0 = ys.min() // 2 * 2, xs.min() // 2 * 2
-    y1, x1 = ys.max() + 2, xs.max() + 2
+    y1, x1 = min(ys.max() + 2, img.shape[0]), min(xs.max() + 2, img.shape[1])
     hh = home.astype(int)
     R, G, B = hh[..., 0], hh[..., 1], hh[..., 2]
     plain = {
@@ -357,16 +366,26 @@ def match(img, home, stairs_boxes=(), widen=0, stairs_width=0):
         "path": (R > 235) & (G > 185) & (G < 235) & (B > 115) & (B < 190) & (R - B > 55),
     }
     textures = {}
+    home_m, src_m = materials(home), materials(img)
     for seed, kind in enumerate(["grass", "path"], 1):
         if seg[kind].sum() < 500:
             continue
-        mid = np.median(lab[seg[kind]], 0)
-        flat = seg[kind] & (np.linalg.norm(lab - mid, axis=-1) < 8)
+        # texture that is already close to the home island's stays; only a flat fill is replaced
+        home_tex = texture(home, home_m[kind] & box_mask(home.shape[:2], HOME_BOXES[kind]))
+        flat_fill = texture(img, src_m[kind] & seg["land"]) < 0.5 * home_tex
+        if not flat_fill and not (kind == "path" and widen):
+            continue
         tex = np.zeros_like(rgb)
         box = (slice(y0, y1), slice(x0, x1))
-        tex[box] = quilt(home, plain[kind], y1 - y0, x1 - x0, seed=seed)
-        textures[kind] = tex
-        rgb[flat] = tex[flat]
+        # a flat fill gets the home island's texture; a path that keeps its own texture is tidied
+        # with pieces of itself, so the tidied spots don't stand out
+        source, ok = (home, plain[kind]) if flat_fill else (rgb, seg[kind])
+        tex[box] = quilt(source, ok, y1 - y0, x1 - x0, seed=seed)
+        textures[kind] = tex                  # a widened path is tidied with it below
+        if flat_fill:
+            mid = np.median(lab[seg[kind]], 0)
+            flat = seg[kind] & (np.linalg.norm(lab - mid, axis=-1) < 8)
+            rgb[flat] = tex[flat]
 
     # shapes: wider stairs and paths, so the capybara has room
     stairs_now = []
@@ -380,10 +399,10 @@ def match(img, home, stairs_boxes=(), widen=0, stairs_width=0):
             keep_out[sy0:sy1, sx0:sx1] = True
         rgb, seg["path"] = widen_path(rgb, seg, widen, keep_out=keep_out)
         if "path" in textures:
-            # where the path meets the top step: plain path between the stairs' rails, under any
-            # grass that hangs over the corners
+            # where the path meets the top of stairs that were widened: plain path between the rails,
+            # under any grass that hangs over the corners (stairs that kept their size need nothing)
             h, s, v = hsv(rgb)
-            for sx0, sy0, sx1, sy1 in stairs_now:
+            for sx0, sy0, sx1, sy1 in (stairs_now if stairs_width else []):
                 land_y = slice(max(0, sy0 - 14), sy0)
                 land_x = slice(sx0 + 6, sx1 - 6)
                 green = (h[land_y, land_x] > 55) & (h[land_y, land_x] < 150) & (v[land_y, land_x] < 0.72)
@@ -409,18 +428,18 @@ def match(img, home, stairs_boxes=(), widen=0, stairs_width=0):
     land2 = up(land_art)
     rgb = nearest_fill(rgb, seg["land"])
     rgb[~land2] = water[~land2]
-    # past the foam and the bright shallows (about 22 px, like the home island's shore), the open
+    # past the foam and the bright shallows (about 14 px, like the home island's shore), the open
     # water is the home island's own open sea, sewn like the grass; the two mix over 14 px
     hh, hs, hv = hsv(home)
     home_blue = (hh > 180) & (hh < 212) & (hs > 0.3) & (hv > 0.7)
     home_land = ndimage.binary_opening(~home_blue, iterations=2)
     open_sea = home_blue & (ndimage.distance_transform_edt(~home_land) > 40)
     d1 = ndimage.distance_transform_edt(~land_art) * 2
-    mix = up((np.clip((d1 - 22) / 14, 0, 1) > bayer(land_art.shape)) & (d1 <= 110))
+    mix = up((np.clip((d1 - 14) / 14, 0, 1) > bayer(land_art.shape)) & (d1 <= 110))
     ys, xs = np.nonzero(mix)
     if len(ys):
         y0, x0 = ys.min() // 2 * 2, xs.min() // 2 * 2
-        y1, x1 = ys.max() + 2, xs.max() + 2
+        y1, x1 = min(ys.max() + 2, img.shape[0]), min(xs.max() + 2, img.shape[1])
         sea_tex = quilt(home, open_sea, y1 - y0, x1 - x0, seed=3)
         box = (slice(y0, y1), slice(x0, x1))
         rgb[box][mix[box]] = sea_tex[mix[box]]
@@ -447,7 +466,7 @@ def before_after(img, rgba, home, seg):
     size = (half, round((box[3] - box[1]) * scale))
     top = Image.new("RGB", (half * 2 + 10, size[1] + 30), (34, 34, 38))
     d = ImageDraw.Draw(top)
-    for i, (pic, label) in enumerate([(img, "from Codex"), (after, "matched to the home island")]):
+    for i, (pic, label) in enumerate([(img, "original"), (after, "matched to the home island")]):
         top.paste(Image.fromarray(pic).crop(box).resize(size, Image.LANCZOS), (i * (half + 10), 30))
         d.text((i * (half + 10) + 6, 5), label, fill="white", font=font)
     # close-ups at 2x: where each kind of ground is thickest in Codex's picture
@@ -465,7 +484,7 @@ def before_after(img, rgba, home, seg):
     for label, (hx, hy), (nx, ny) in rows:
         row = Image.new("RGB", (cw * 2 * 3 + 20, ch * 2 + 26), (34, 34, 38))
         d = ImageDraw.Draw(row)
-        for i, (pic, x, y, who) in enumerate([(home, hx, hy, "home island"), (img, nx, ny, "Codex"), (after, nx, ny, "matched")]):
+        for i, (pic, x, y, who) in enumerate([(home, hx, hy, "home island"), (img, nx, ny, "original"), (after, nx, ny, "matched")]):
             row.paste(Image.fromarray(pic[y:y + ch, x:x + cw]).resize((cw * 2, ch * 2), Image.NEAREST), (i * (cw * 2 + 10), 26))
             d.text((i * (cw * 2 + 10) + 6, 4), f"{label}: {who}", fill="white", font=font)
         parts.append(row)
@@ -498,10 +517,22 @@ def main():
         print("wrote", out.relative_to(ROOT))
         return
     home = load_home()
-    rgba, seg = match(img, home, cfg.get("stairs", []), cfg.get("widen_path", 0), cfg.get("stairs_width", 0))
+    # land closer than MARGIN to the picture's edge: add sea all round (the water is painted again
+    # anyway); the piece then sits `pad` pixels further up and left in the big map
+    land = segment(img)["land"]
+    ys, xs = np.nonzero(land)
+    margin = min(ys.min(), xs.min(), img.shape[0] - 1 - ys.max(), img.shape[1] - 1 - xs.max())
+    pad = max(0, MARGIN - int(margin) + 1) // 2 * 2
+    stairs = cfg.get("stairs", [])
+    if pad:
+        img = np.pad(img, ((pad, pad), (pad, pad), (0, 0)), mode="edge")
+        stairs = [(x0 + pad, y0 + pad, x1 + pad, y1 + pad) for x0, y0, x1, y1 in stairs]
+        print(f"added {pad} px of sea on every side (the land came within {margin} px of the edge)")
+    rgba, seg = match(img, home, stairs, cfg.get("widen_path", 0), cfg.get("stairs_width", 0))
     OUT.mkdir(parents=True, exist_ok=True)
     out = OUT / f"{src.stem}.png"
     Image.fromarray(rgba).save(out, optimize=True)
+    out.with_suffix(".json").write_text(json.dumps({"source": src.as_posix(), "pad": pad}) + "\n")
     sheet = ROOT / "check" / f"match_{src.stem}.png"
     before_after(img, rgba, home, seg).save(sheet, optimize=True)
     print("wrote", out.relative_to(ROOT), "and", sheet.relative_to(ROOT))

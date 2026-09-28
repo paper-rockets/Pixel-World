@@ -6,18 +6,17 @@ The folder is also on GitHub now: `paper-rockets/pixel-world`, work branch `clau
 
 ## Right now
 
-**The campfire island is fixed in code, and the user moved on: they are making the next island, the south-east meadow (`se_meadow.png`), with ChatGPT image generation.**
+**2 of the 6 new island pictures are done and matched to the home island. Next: the other four, then the bridges, waterfalls and campfire pieces.**
 
-- Codex delivered `source_art/archipelago/ground/sw_campfire.png`. The check (`tools/review_island.py`, picture `check/review_sw_campfire.png`) found 6 problems:
-  - **Good:** the layout (round clearing, path from the north shore, stairs down the south cliff, beach), the island's size (830 × 719), the sea around it, ground only, the view and the pixel size.
-  - **Didn't match:** the grass was a stronger green (`#B0E02C`, home `#BBE056`) and one flat colour; the cliffs were round orange boulders (home: flat tan slabs with thin cracks); the path was more orange; the water was one flat blue; the path was about 40 px wide and the stairs about 50 px, only as wide as the capybara (50 px). Home paths are 60–75 px and the dock walkway is 80 px.
-- The user asked whether Claude could fix it instead of Codex. **`tools/match_island.py` fixed all of it except the cliff blocks' shape:** `public/world/islands/sw_campfire.png`, before/after in `check/match_sw_campfire.png`. It passes every check (`check/review_sw_campfire_matched.png`). The cliffs are now the home island's tan, but still Codex's rounded blocks rather than flat slabs. Rebuilding them from the home island's slabs was tried and looked worse (streaky), so it was dropped.
-- Prompts for what comes next:
-  - the next island with ChatGPT (in use): `concepts/archipelago/CHATGPT_2_se_meadow.md`, with three numbered reference pictures
-  - the same with Codex: `concepts/archipelago/CODEX_2_next_island.md` (skip the redraw, make `se_meadow.png` next; it carries the updated style rules itself, since the PC may have the older `CODEX_PROMPT.md`)
-  - a Codex redraw of the campfire island, if the user ever wants flat-slab cliffs there: `concepts/archipelago/CODEX_FIX_1_sw_campfire.md` (makes `sw_campfire_v2.png`; then run `match_island.py` and `review_island.py` on it too)
-- `concepts/archipelago/CODEX_PROMPT.md` now has the palette measured from `tiny_map.png` (its old cliff colours were too orange), the cliff shape, a texture rule, and the real path and stair widths.
-- **Next step:** when `se_meadow.png` arrives (the user may attach it in the chat, or put it on GitHub), save it as `source_art/archipelago/ground/se_meadow.png`, run `review_island.py` on it, then `match_island.py` (set up its `ISLANDS` entry after `--masks`), then `review_island.py` on the result, and show the user the before/after.
+| Island | Made by | Original check | After `match_island.py` |
+|---|---|---|---|
+| south-west campfire (`sw_campfire`) | Codex | 6 to fix | 0 to fix (cliffs are still Codex's rounded blocks, in the home island's tan) |
+| south-east meadow (`se_meadow`) | ChatGPT image generation | 5 to fix | 0 to fix |
+
+- **Campfire** (`check/review_sw_campfire.png`, `check/match_sw_campfire.png`): Codex's grass was too strong and flat, the cliffs round orange boulders, the water flat, and the path (~40 px) and stairs (~50 px) only as wide as the capybara. The user asked whether Claude could fix it instead of Codex: `match_island.py` fixed everything but the rounded cliff blocks. Rebuilding those from the home island's slabs looked worse (streaky), so it was dropped.
+- **Meadow** (`check/review_se_meadow.png`, `check/match_se_meadow.png`): the user was away from Codex and used ChatGPT with `concepts/archipelago/CHATGPT_2_se_meadow.md` and three numbered reference pictures. It came out much closer than Codex's first try: ground only, flat tan slab cliffs, textured grass, wide stairs. It needed stronger colours softened, paths widened from ~46 to ~62 px, and 26 px of sea added around it (the land came within 58 px of the picture's edge). The user's zip (`island_ground_only_complete_set.zip`) also had `se_meadow_alt_no_water.png`: that is a different drawing, not a cut-out of `se_meadow.png` (tall pillar cliffs, a small rock, no stairs, land almost touching the edges). It's kept as a spare and not used.
+- **Next islands:** `w_caves_pinktree` (has a pond), `n_orchard` (tilled soil beds), `ne_pond` (a pond) and `islets`. `match_island.py` can't handle ponds or soil yet (see "Fixing new island art"), so either add that first or do `islets` next. Reuse the ChatGPT prompt shape: numbered reference pictures, "picture 1, 2, 3", ground only, and the sizes stated against the pictures.
+- Other prompts on file: `concepts/archipelago/CODEX_2_next_island.md` (the meadow for Codex, with the updated style rules), and `concepts/archipelago/CODEX_FIX_1_sw_campfire.md` (a Codex redraw of the campfire island, if flat-slab cliffs are ever wanted there). `concepts/archipelago/CODEX_PROMPT.md` has the measured palette, the cliff shape, the texture rule, and the real path and stair widths.
 - The game itself is the normal small Sunny Meadow and works. Both published links were updated on 2026-09-28 with the hiding-spot wiggle fix (Lost Ducklings version 9, Orange Garden version 5).
 
 See "Big Sunny Meadow" below for the full plan.
@@ -85,7 +84,8 @@ python tools/match_island.py source_art/archipelago/ground/<name>.png --masks  #
 
 - Keeps every shape Codex drew. Recolours grass, path, beach, cliffs and stairs onto the home island's shades.
 - Replaces the flat grass, path and open water with the home island's own texture, sewn from small overlapping pieces of `tiny_map.png`. The foam and bright shallows along the shore are painted like the big map's sea.
-- Saves the island's piece for the big map: its land plus its shore water, fading out by 80 px.
+- Saves the island's piece for the big map: its land plus its shore water, fading out by 80 px. If the land comes closer than that to the picture's edge, sea is added all round, and `public/world/islands/<name>.json` says by how much (`pad`: the piece's top-left moves up and left by that much).
+- Grass or path texture that is already close to the home island's is kept; only a flat fill is replaced.
 - Per island settings go in `ISLANDS` at the top of the file: boxes around stairs (they can't be told from cliffs by colour), how far to widen the paths, and how wide to make the stairs. Check `--masks` for a new island first.
 - Not handled yet: ponds and streams (inland water is taken for land), and ground the home island doesn't have (like tilled soil). Add those before running it on `w_caves_pinktree`, `ne_pond` or `n_orchard`.
 
@@ -141,6 +141,8 @@ Then publish with the Artifact tool: `file_path` = that `index.html`, `root` = `
 10. **Fading one picture's water into another sea:** make the outer water see-through in a dither pattern on the art-pixel grid (2 x 2 map pixels), over about 44 map pixels from the edge. The join disappears completely (`public/world/home.webp`, made in `build_world.py`). Land cut off at a picture's edge needs a small cap of new land.
 11. **Codex doesn't follow bare numbers or palettes closely.** Asked for 90–110 px paths, it drew about 40, and it painted stronger colours than the palette it was given. Give every size a thing to match in `tiny_map.png` ("as wide as the path from the house to the dock"), and measure what comes back with `tools/review_island.py` instead of judging by eye.
 12. **Fix Codex's colours and texture in code, not its shapes.** Recolouring and sewing texture from the home island's own pixels match well; that isn't the rejected "ground painted in code", because every textured pixel comes from `tiny_map.png`. Widening paths and stairs also works. Redrawing shapes doesn't: rebuilding the cliffs from the home island's slabs came out streaky. Ask Codex for shapes.
+13. **Tell path from beach by what borders the sand, not by its colour.** Sand bordered mostly by grass is path; sand bordered by cliffs and sea is beach. ChatGPT paints the two nearly the same colour, and the old colour split gave different answers from run to run.
+14. **Image generators' "extra versions" can be different drawings.** ChatGPT's "transparent" meadow had other paths, tall pillar cliffs and a rock. Compare every file before using it.
 
 ## Known small issues
 

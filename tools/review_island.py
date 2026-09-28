@@ -13,6 +13,7 @@ Writes check/review_<name>.png: both islands side by side at the same scale, clo
 island next to the same kind of ground on the home island, the capybara at game size on the new
 island's narrowest path, and colour swatches.
 """
+import json
 import re
 import sys
 from pathlib import Path
@@ -81,22 +82,11 @@ def materials(img):
     grass = (h > 55) & (h < 130) & (s > 0.2) & (v > 0.72)
     sandy = (h > 20) & (h < 55) & (s > 0.12) & (s < 0.56) & (v > 0.86)
     cliff = (h < 40) & (s > 0.25) & (v > 0.35) & (v < 0.95) & ~sandy
-    # paths and beaches are painted in two different sandy colours (a path can run right down to the
-    # sea, so touching the water doesn't tell them apart): split the sandy colours in two, and the
-    # group that lies nearer the sea is the beach
+    # a path runs between grass: sand bordered mostly by grass is path, and sand bordered mostly by
+    # cliffs and sea is beach (a path can run right down to the sea, and paths and beaches can be
+    # painted in nearly the same colour, so neither tells them apart)
     beach = np.zeros_like(sandy)
-    if sandy.sum() > 100:
-        px = img[sandy].astype(np.float32)
-        crit = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.5)
-        _, lab, _ = cv2.kmeans(px, 2, None, crit, 3, cv2.KMEANS_PP_CENTERS)
-        lab = lab.ravel()
-        near_sea = ndimage.distance_transform_edt(~water)[sandy]
-        beach_group = int(near_sea[lab == 1].mean() < near_sea[lab == 0].mean())
-        beach[sandy] = lab == beach_group
-        beach = ndimage.binary_opening(beach, iterations=1) & sandy
-    # a path runs between grass; path-coloured sand bordered mostly by other things (like the shade
-    # at the foot of a cliff) belongs to the beach
-    path = sandy & ~beach
+    path = sandy
     greenish = (h > 55) & (h < 170) & (s > 0.2) & (v > 0.25)  # grass, including its dark edge lines
     lab, n = ndimage.label(path)
     for i, sl in enumerate(ndimage.find_objects(lab), 1):
@@ -176,10 +166,15 @@ def main():
         new[alpha < 128] = SEA                                   # the big map's sea shows through
     home = np.ascontiguousarray(np.array(Image.open(HOME_FILE).convert("RGB"))[::2, ::2])
     at = (int(sys.argv[2]), int(sys.argv[3])) if len(sys.argv) >= 4 else PLANNED.get(re.sub(r"_v\d+$", "", name))  # sw_campfire_v2 -> sw_campfire
+    info = path.with_suffix(".json")
+    if at and len(sys.argv) < 4 and info.exists():
+        pad = json.loads(info.read_text())["pad"]      # extra sea added around it by match_island.py
+        at = (at[0] - pad, at[1] - pad)
     H, W = new.shape[:2]
     report = []
 
     def say(ok, text):
+        ok = None if ok is None else bool(ok)
         mark = {True: "OK  ", False: "FIX ", None: "note"}[ok]
         report.append((ok, text))
         print(f"  [{mark}] {text}")
@@ -193,6 +188,8 @@ def main():
     foam = (v_new > 0.88) & (s_new < 0.12)
     shore_water = ndimage.distance_transform_edt(nm["water"] | foam) <= 100
     nm["water"] &= shore_water
+    if alpha is not None:
+        nm["water"] &= alpha >= 128      # only the piece's own water, not the plain sea shown through it
     rows = []
     for key in ["grass", "path", "sand", "cliff", "water"]:
         # on the home island the boxes already say which sand is path and which is beach
