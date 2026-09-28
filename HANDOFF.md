@@ -6,17 +6,18 @@ The folder is also on GitHub now: `paper-rockets/pixel-world`, work branch `clau
 
 ## Right now
 
-**The first Codex island is fixed in code. Waiting for the user: approve it, or let Codex redraw it.**
+**The campfire island is fixed in code, and the user moved on: they are making the next island, the south-east meadow (`se_meadow.png`), with ChatGPT image generation.**
 
 - Codex delivered `source_art/archipelago/ground/sw_campfire.png`. The check (`tools/review_island.py`, picture `check/review_sw_campfire.png`) found 6 problems:
   - **Good:** the layout (round clearing, path from the north shore, stairs down the south cliff, beach), the island's size (830 × 719), the sea around it, ground only, the view and the pixel size.
   - **Didn't match:** the grass was a stronger green (`#B0E02C`, home `#BBE056`) and one flat colour; the cliffs were round orange boulders (home: flat tan slabs with thin cracks); the path was more orange; the water was one flat blue; the path was about 40 px wide and the stairs about 50 px, only as wide as the capybara (50 px). Home paths are 60–75 px and the dock walkway is 80 px.
 - The user asked whether Claude could fix it instead of Codex. **`tools/match_island.py` fixed all of it except the cliff blocks' shape:** `public/world/islands/sw_campfire.png`, before/after in `check/match_sw_campfire.png`. It passes every check (`check/review_sw_campfire_matched.png`). The cliffs are now the home island's tan, but still Codex's rounded blocks rather than flat slabs. Rebuilding them from the home island's slabs was tried and looked worse (streaky), so it was dropped.
-- Two Codex messages are ready, and the user picks one:
-  - approve the fix: `concepts/archipelago/CODEX_2_next_island.md` (skip the redraw, make `se_meadow.png` next; it carries the updated style rules itself, since the PC may have the older `CODEX_PROMPT.md`)
-  - have Codex redraw: `concepts/archipelago/CODEX_FIX_1_sw_campfire.md` (makes `sw_campfire_v2.png`; then run `match_island.py` and `review_island.py` on it too)
+- Prompts for what comes next:
+  - the next island with ChatGPT (in use): `concepts/archipelago/CHATGPT_2_se_meadow.md`, with three numbered reference pictures
+  - the same with Codex: `concepts/archipelago/CODEX_2_next_island.md` (skip the redraw, make `se_meadow.png` next; it carries the updated style rules itself, since the PC may have the older `CODEX_PROMPT.md`)
+  - a Codex redraw of the campfire island, if the user ever wants flat-slab cliffs there: `concepts/archipelago/CODEX_FIX_1_sw_campfire.md` (makes `sw_campfire_v2.png`; then run `match_island.py` and `review_island.py` on it too)
 - `concepts/archipelago/CODEX_PROMPT.md` now has the palette measured from `tiny_map.png` (its old cliff colours were too orange), the cliff shape, a texture rule, and the real path and stair widths.
-- **Next step:** when a new Codex picture arrives, run `review_island.py` on it, then `match_island.py`, then `review_island.py` on the result, and show the user the before/after.
+- **Next step:** when `se_meadow.png` arrives (the user may attach it in the chat, or put it on GitHub), save it as `source_art/archipelago/ground/se_meadow.png`, run `review_island.py` on it, then `match_island.py` (set up its `ISLANDS` entry after `--masks`), then `review_island.py` on the result, and show the user the before/after.
 - The game itself is the normal small Sunny Meadow and works. Both published links were updated on 2026-09-28 with the hiding-spot wiggle fix (Lost Ducklings version 9, Orange Garden version 5).
 
 See "Big Sunny Meadow" below for the full plan.
@@ -38,6 +39,7 @@ Both pages contain both islands; each page just starts on its own island.
 - Tests on a phone (Samsung, Chrome) and an older tablet (Galaxy Tab S6 Lite 2020 is the worst case).
 - Sends screenshots with circles drawn on problems, and asks to see the full map as an image.
 - Art comes from **Codex** (image generation). Claude does the design, code and fixes, and writes the prompts for Codex. Before writing a Codex prompt, check it against the current files, and always limit Codex to adding new art files.
+- When away from Codex, the user makes art with **ChatGPT image generation**. ChatGPT can't open the project's files, so give it numbered reference pictures to attach, and write the prompt about "picture 1, 2, 3" instead of file paths (see `concepts/archipelago/CHATGPT_2_se_meadow.md`). Good references: `source_art/school/ground/map_ground.png` (ground only, flat tan cliff slabs, the right texture), `source_art/tiny_map.png` (style and scale), and the island's `concepts/archipelago/ref_*.png` (layout).
 - The Orange Garden is an **Orange Shirt Day** theme. Keep it quiet and respectful: no timer, score, coins or prizes. It must **not** become a step in any unlock or progress chain. The theme stays limited to the capybara's orange tee and the garden. The user's pack deliberately removed a display board. An "Every Child Matters" line was offered but not added.
 
 ## How to run, test and publish
