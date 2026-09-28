@@ -463,8 +463,12 @@ export class PlayScene extends Phaser.Scene {
         } else if (d < HINT_RANGE && time > c.nextHint) {
           c.nextHint = time + 2600 + Math.random() * 2600;
           this.hopOnce(c, 10);
-          const s = c.spot;
-          this.tweens.add({ targets: s.img, scaleX: s.scale * 1.06, scaleY: s.scale * 0.95, duration: 110, yoyo: true, repeat: 1 });
+          // a little wiggle around the size the spot is drawn at (level.json's scale is already in the picture);
+          // start from rest so two wiggles can never stack up and leave it the wrong size
+          const img = c.spot.img;
+          this.tweens.killTweensOf(img);
+          img.setScale(SPOT_SCALE);
+          this.tweens.add({ targets: img, scaleX: SPOT_SCALE * 1.06, scaleY: SPOT_SCALE * 0.95, duration: 110, yoyo: true, repeat: 1 });
           this.quack(Phaser.Math.Clamp(1 - d / HINT_RANGE, 0.15, 0.7), true);
         }
       }
