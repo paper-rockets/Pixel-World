@@ -6,7 +6,7 @@ The folder is also on GitHub now: `paper-rockets/pixel-world`, work branch `clau
 
 ## Right now
 
-**3 of the 6 new island pictures are done and matched to the home island. Next: the other three (each has a pond or soil beds, which `match_island.py` can't handle yet), then the bridges, waterfalls and campfire pieces.**
+**3 of the 6 new island pictures are done and matched to the home island. Next: the north orchard (prompt ready), then the two pond islands, then the bridges, waterfalls, campfire and vegetable-bed pieces.**
 
 | Island | Made by | Original check | After `match_island.py` |
 |---|---|---|---|
@@ -17,7 +17,8 @@ The folder is also on GitHub now: `paper-rockets/pixel-world`, work branch `clau
 - **Campfire** (`check/review_sw_campfire.png`, `check/match_sw_campfire.png`): Codex's grass was too strong and flat, the cliffs round orange boulders, the water flat, and the path (~40 px) and stairs (~50 px) only as wide as the capybara. The user asked whether Claude could fix it instead of Codex: `match_island.py` fixed everything but the rounded cliff blocks. Rebuilding those from the home island's slabs looked worse (streaky), so it was dropped.
 - **Meadow** (`check/review_se_meadow.png`, `check/match_se_meadow.png`): the user was away from Codex and used ChatGPT with `concepts/archipelago/CHATGPT_2_se_meadow.md` and three numbered reference pictures. It came out much closer than Codex's first try: ground only, flat tan slab cliffs, textured grass, wide stairs. It needed stronger colours softened, paths widened from ~46 to ~62 px, and 26 px of sea added around it (the land came within 58 px of the picture's edge). The user's zip (`island_ground_only_complete_set.zip`) also had `se_meadow_alt_no_water.png`: that is a different drawing, not a cut-out of `se_meadow.png` (tall pillar cliffs, a small rock, no stairs, land almost touching the edges). It's kept as a spare and not used.
 - **Islets** (`check/review_islets.png`, `check/match_islets.png`): ChatGPT with `concepts/archipelago/CHATGPT_3_islets.md`. Eight round grassy islands with slab cliffs and sand rims, close to the style on the first try. They needed softer colours, the home island's water, and 42 px of sea added (land came within 43 px of the edge). The zip (`islets_complete_package_clean.zip`) also had `islets_no_water.png`, though the prompt asked for one picture: the same layout but a different drawing (bigger islands, taller cliffs, wide sand). It's kept as a spare and not used. The islets have no planned place yet; `world_preview.py` scatters them into open sea for the picture only.
-- **Next islands:** `w_caves_pinktree` (has a pond), `n_orchard` (tilled soil beds) and `ne_pond` (a pond). `match_island.py` can't handle ponds or soil yet (see "Fixing new island art"), so add that when the picture comes in, before trusting its output. Reuse the ChatGPT prompt shape: numbered reference pictures, "picture 1, 2, 3", ground only, the sizes stated against the pictures, and "give it to me as a .zip with just this one picture inside" (the user asked for zips; they come back through the chat as uploads).
+- **Next: the north orchard**, prompt ready in `concepts/archipelago/CHATGPT_4_n_orchard.md` and given to the user. Its vegetable beds are left out of the ground picture: they come later as a separate flat piece with their fence and crops, so the ground is only grass, paths, cliffs and a little sand, which `match_island.py` already handles.
+- **After that:** `w_caves_pinktree` and `ne_pond`, which both have a pond. `match_island.py` can't handle ponds yet (see "Fixing new island art"), so add that when the first one comes in, before trusting its output. Reuse the ChatGPT prompt shape: numbered reference pictures, "picture 1, 2, 3", ground only, the sizes stated against the pictures, and "give it to me as a .zip with just this one picture inside" (the user asked for zips; they come back through the chat as uploads).
 - Other prompts on file: `concepts/archipelago/CODEX_2_next_island.md` (the meadow for Codex, with the updated style rules), and `concepts/archipelago/CODEX_FIX_1_sw_campfire.md` (a Codex redraw of the campfire island, if flat-slab cliffs are ever wanted there). `concepts/archipelago/CODEX_PROMPT.md` has the measured palette, the cliff shape, the texture rule, and the real path and stair widths.
 - The game itself is the normal small Sunny Meadow and works. Both published links were updated on 2026-09-28 with the hiding-spot wiggle fix (Lost Ducklings version 9, Orange Garden version 5).
 
@@ -172,7 +173,7 @@ Then publish with the Artifact tool: `file_path` = that `index.html`, `root` = `
   - a sheet of islets
 - Each new island is a Codex ground-only picture at the home island's exact scale.
 - Trees, bushes, rocks, logs, reeds, flowers, lily pads, fences, signs, lamps, barrels, crates and dock pieces come from `source_art/school/objects/`.
-- New Codex pieces: bridges (whole and modular), waterfalls, a splash and a campfire, all animated in 4 frames.
+- New Codex pieces: bridges (whole and modular), waterfalls, a splash and a campfire, all animated in 4 frames. Also the orchard's vegetable beds: a flat piece of soil and crops that lies on the ground (drawn under the capybara), with a fence around it.
 
 **Planned positions** (game pixels, world 4608 x 3456, top-left corner of each picture; adjust to the real art):
 
