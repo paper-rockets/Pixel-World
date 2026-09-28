@@ -2,6 +2,7 @@
 
 Run from the game folder:
   python tools/match_island.py source_art/archipelago/ground/sw_campfire.png
+  python tools/match_island.py school      (the school island as the game draws it: only new water)
 
 Everything Codex drew keeps its shape: the coastline, cliffs, paths, stairs and beach. What changes:
 - grass, paths, beach sand, cliff faces and stairs get the home island's own colours (each one's
@@ -58,6 +59,11 @@ ISLANDS = {
     },
     "n_orchard": {
         "widen_path": 8,                    # about 47 px wide as drawn
+    },
+    # the school island, as the game draws it (run with the name "school" instead of a picture):
+    # it's finished art, so its land stays exactly as it is and only its water is made new
+    "school": {
+        "keep_land": True,
     },
 }
 MARGIN = 84   # sea needed around the land for the piece's water to fade out (80 px) without being cut
@@ -147,6 +153,25 @@ def paint_water(land, seed=5):
 
 def load_home():
     return np.ascontiguousarray(np.array(Image.open(HOME_FILE).convert("RGB"))[::2, ::2])
+
+
+def school_picture():
+    """The school island as the game draws it: its ground with every object on it, in the order the
+    game draws them (src/school/assets.json). The pictures are stored at 2x."""
+    info = json.loads((ROOT / "src" / "school" / "assets.json").read_text())
+    school = ROOT / "public" / "school"
+    atlas = Image.open(school / "objects.png").convert("RGBA")
+    frames = json.loads((school / "objects.json").read_text())["frames"]
+    W, H = info["size"]
+    pic = Image.open(school / "ground.webp").convert("RGBA").resize((W, H), Image.NEAREST)
+    for o in sorted(info["objects"], key=lambda o: o["base"] - (1e4 if o["ground"] else 0)):
+        if o["id"] == "school":
+            im = Image.open(school / "school.png").convert("RGBA")
+        else:
+            f = frames[o["id"]]["frame"]
+            im = atlas.crop((f["x"], f["y"], f["x"] + f["w"], f["y"] + f["h"]))
+        pic.alpha_composite(im.resize((round(o["w"]), round(o["h"])), Image.NEAREST), (round(o["x"]), round(o["y"])))
+    return np.array(pic.convert("RGB"))
 
 
 def segment(img, stairs_boxes=()):
@@ -341,8 +366,15 @@ def nearest_fill(img, have):
     return img[idx[0], idx[1]]
 
 
-def match(img, home, stairs_boxes=(), widen=0, stairs_width=0):
+def match(img, home, stairs_boxes=(), widen=0, stairs_width=0, keep_land=False):
     seg = segment(img, stairs_boxes)
+    rgb = img.copy() if keep_land else new_land(img, home, seg, stairs_boxes, widen, stairs_width)
+    return new_water(img, home, seg, rgb), seg
+
+
+def new_land(img, home, seg, stairs_boxes, widen, stairs_width):
+    """The island's land with the home island's colours and texture, and wider paths and stairs.
+    Updates seg["path"] when the paths get wider."""
     lab = to_lab(img)
     home_lab = to_lab(home)
     out = lab
@@ -423,7 +455,11 @@ def match(img, home, stairs_boxes=(), widen=0, stairs_width=0):
                 on_path = ndimage.mean(seg["path"], gl, range(1, n + 1))
                 bits = np.isin(gl, 1 + np.flatnonzero((areas < 40) & (on_path > 0.5)))
                 rgb[bits] = textures["path"][bits]
+    return rgb
 
+
+def new_water(img, home, seg, rgb):
+    """The island's new water around its land `rgb`, and the piece's see-through edge (rgba)."""
     # water: painted on the art-pixel grid (2 x 2 picture pixels), like the rest of the art
     H, W = seg["land"].shape
     land_e = np.pad(seg["land"], ((0, H % 2), (0, W % 2)))
@@ -454,7 +490,7 @@ def match(img, home, stairs_boxes=(), widen=0, stairs_width=0):
     d = ndimage.distance_transform_edt(~land_art) * 2
     keep = (np.clip((80 - d) / 44, 0, 1) > bayer(land_art.shape)) | land_art
     alpha = up(keep).astype(np.uint8) * 255
-    return np.dstack([rgb, alpha]), seg
+    return np.dstack([rgb, alpha])
 
 
 def before_after(img, rgba, home, seg):
@@ -511,9 +547,12 @@ def main():
         sys.exit(__doc__)
     src = Path(args[0])
     name = re.sub(r"_v\d+$", "", src.stem)          # sw_campfire_v2 uses sw_campfire's settings
-    pic = np.array(Image.open(src).convert("RGBA"))
-    img = pic[..., :3].copy()
-    img[pic[..., 3] < 128] = SEA_BG                 # a see-through picture (land without its water): that part is sea
+    if args[0] == "school":
+        img = school_picture()
+    else:
+        pic = np.array(Image.open(src).convert("RGBA"))
+        img = pic[..., :3].copy()
+        img[pic[..., 3] < 128] = SEA_BG             # a see-through picture (land without its water): that part is sea
     cfg = ISLANDS.get(name, {})
     if "--masks" in sys.argv:
         # for setting up a new island: which kind of ground each pixel was taken for
@@ -528,18 +567,32 @@ def main():
         print("wrote", out.relative_to(ROOT))
         return
     home = load_home()
+    land = segment(img)["land"]
+    # land cut off by the picture's edge (like the islets in the school picture's corners) belongs
+    # to islands outside the picture: it becomes sea, unless it's the island itself
+    parts, n = ndimage.label(land)
+    if n > 1:
+        sizes = ndimage.sum(land, parts, range(1, n + 1))
+        edge = np.unique(np.concatenate([parts[0], parts[-1], parts[:, 0], parts[:, -1]]))
+        cut = [i for i in edge if i and i != 1 + np.argmax(sizes)]
+        if cut:
+            img[np.isin(parts, cut)] = SEA_BG
+            land = segment(img)["land"]
+            print(f"took out {len(cut)} bit(s) of land cut off by the picture's edge")
     # land closer than MARGIN to the picture's edge: add sea all round (the water is painted again
     # anyway); the piece then sits `pad` pixels further up and left in the big map
-    land = segment(img)["land"]
     ys, xs = np.nonzero(land)
     margin = min(ys.min(), xs.min(), img.shape[0] - 1 - ys.max(), img.shape[1] - 1 - xs.max())
     pad = max(0, MARGIN - int(margin) + 1) // 2 * 2
     stairs = cfg.get("stairs", [])
     if pad:
-        img = np.pad(img, ((pad, pad), (pad, pad), (0, 0)), mode="edge")
+        big = np.empty((img.shape[0] + 2 * pad, img.shape[1] + 2 * pad, 3), np.uint8)
+        big[:] = SEA_BG
+        big[pad:-pad, pad:-pad] = img
+        img = big
         stairs = [(x0 + pad, y0 + pad, x1 + pad, y1 + pad) for x0, y0, x1, y1 in stairs]
         print(f"added {pad} px of sea on every side (the land came within {margin} px of the edge)")
-    rgba, seg = match(img, home, stairs, cfg.get("widen_path", 0), cfg.get("stairs_width", 0))
+    rgba, seg = match(img, home, stairs, cfg.get("widen_path", 0), cfg.get("stairs_width", 0), cfg.get("keep_land", False))
     OUT.mkdir(parents=True, exist_ok=True)
     out = OUT / f"{src.stem}.png"
     Image.fromarray(rgba).save(out, optimize=True)
