@@ -87,6 +87,7 @@ python tools/match_island.py source_art/archipelago/ground/<name>.png --masks  #
 - Saves the island's piece for the big map: its land plus its shore water, fading out by 80 px. If the land comes closer than that to the picture's edge, sea is added all round, and `public/world/islands/<name>.json` says by how much (`pad`: the piece's top-left moves up and left by that much).
 - Grass or path texture that is already close to the home island's is kept; only a flat fill is replaced.
 - Per island settings go in `ISLANDS` at the top of the file: boxes around stairs (they can't be told from cliffs by colour), how far to widen the paths, and how wide to make the stairs. Check `--masks` for a new island first.
+- See the whole map with `python tools/world_preview.py` (about a minute). Its sea is sewn from the home island's open water, as planned for the real map, so the pieces fade into it without a seam.
 - Not handled yet: ponds and streams (inland water is taken for land), and ground the home island doesn't have (like tilled soil). Add those before running it on `w_caves_pinktree`, `ne_pond` or `n_orchard`.
 
 **Publishing:** do this for both pages after every change, because they share code.
@@ -122,6 +123,7 @@ Then publish with the Artifact tool: `file_path` = that `index.html`, `root` = `
 | `tools/build_world.py`, `tools/world_paint.py` | Claude's big-map generator (see below). The ground painting was rejected; the sea, the blending and the object placement are reusable. |
 | `tools/review_island.py` | Checks a Codex island picture against the home island and makes `check/review_<name>.png` (see "Checking new island art") |
 | `tools/match_island.py` | Makes a Codex island picture match the home island (see "Fixing new island art") |
+| `tools/world_preview.py` | The whole big map as it stands (`check/world_now.png`): the home island, every matched piece in its planned place, faint concept pictures for islands still to make, and the planned bridges. The user likes seeing this after each new island. |
 | `public/world/islands/` | Matched island pieces for the big map (made by `tools/match_island.py`). Not used by the game yet. |
 | `concepts/archipelago/` | The chosen concept, one reference crop per island, `CODEX_PROMPT.md`, and the fix requests (`CODEX_FIX_*.md`) |
 | `concepts/codex_attempt/` | Codex's broken 10x map, kept only for the record |
