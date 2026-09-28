@@ -169,7 +169,11 @@ def main():
         sys.exit(__doc__)
     path = Path(sys.argv[1])
     name = path.stem
-    new = np.array(Image.open(path).convert("RGB"))
+    raw = np.array(Image.open(path).convert("RGBA"))
+    alpha = raw[..., 3] if (raw[..., 3] < 255).any() else None   # an island piece from match_island.py
+    new = raw[..., :3].copy()
+    if alpha is not None:
+        new[alpha < 128] = SEA                                   # the big map's sea shows through
     home = np.ascontiguousarray(np.array(Image.open(HOME_FILE).convert("RGB"))[::2, ::2])
     at = (int(sys.argv[2]), int(sys.argv[3])) if len(sys.argv) >= 4 else PLANNED.get(re.sub(r"_v\d+$", "", name))  # sw_campfire_v2 -> sw_campfire
     H, W = new.shape[:2]
@@ -185,6 +189,10 @@ def main():
     # ---- materials: colour, colour strength, texture
     hm = materials(home)
     nm = materials(new)
+    _, s_new, v_new = hsv(new)
+    foam = (v_new > 0.88) & (s_new < 0.12)
+    shore_water = ndimage.distance_transform_edt(nm["water"] | foam) <= 100
+    nm["water"] &= shore_water
     rows = []
     for key in ["grass", "path", "sand", "cliff", "water"]:
         # on the home island the boxes already say which sand is path and which is beach
@@ -213,9 +221,7 @@ def main():
                 say(True, f"{NAMES[key]} texture: new {b['tex']:.1f} vs home {a['tex']:.1f}")
 
     # ---- size and sea around the island
-    _, s_new, v_new = hsv(new)
-    foam = (v_new > 0.88) & (s_new < 0.12)
-    land = ndimage.binary_opening(~nm["water"] & ~foam, iterations=2)
+    land = ndimage.binary_opening(~(nm["water"] | ~shore_water) & ~foam, iterations=2)
     lab, n = ndimage.label(land)
     sizes = ndimage.sum(land, lab, range(1, n + 1))
     big = lab == 1 + int(np.argmax(sizes))
@@ -259,7 +265,8 @@ def main():
         ImageDraw.Draw(im).text((12, pad), text, fill="white", font=size)
         return im
 
-    parts.append(title(f"Island check: {path.name} (new) vs the home island", font, 14))
+    what = "matched to the home island by tools/match_island.py" if path.parent.name == "islands" else "new"
+    parts.append(title(f"Island check: {path.name} ({what}) vs the home island", font, 14))
 
     # the results, one line each
     res = Image.new("RGB", (sheet_w, 26 * len(report) + 12), (34, 34, 38))
@@ -274,7 +281,8 @@ def main():
     if at:
         ww, wh = 4608, 3456
         world = Image.new("RGBA", (ww, wh), SEA + (255,))
-        world.alpha_composite(faded(new), at)
+        piece = Image.fromarray(np.dstack([new, alpha])) if alpha is not None else faded(new)
+        world.alpha_composite(piece, at)
         world.alpha_composite(faded(home), HOME_AT)
         x0 = max(0, min(at[0], HOME_AT[0]) - 40)
         y0 = max(0, min(at[1], HOME_AT[1]) - 40)
@@ -353,7 +361,8 @@ def main():
     for p in parts:
         sheet.paste(p, (0, y))
         y += p.height
-    out = ROOT / "check" / f"review_{name}.png"
+    matched = path.parent.name == "islands"                     # a piece made by tools/match_island.py
+    out = ROOT / "check" / f"review_{name}{'_matched' if matched else ''}.png"
     out.parent.mkdir(exist_ok=True)
     sheet.save(out, optimize=True)
     fixes = sum(1 for ok, _ in report if ok is False)
