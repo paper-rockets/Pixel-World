@@ -1,0 +1,222 @@
+:root {
+  --ink: #4a3222;
+  --card: #fffaf0;
+  --yellow: #ffd23f;
+  --yellow-dark: #e0a800;
+  --water: #4cc1e6;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --font: "Nunito", ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  font: 16px/1.3 var(--font);
+  color: var(--ink);
+  height: 100%;
+  overflow: hidden;
+  background: var(--water);
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#game {
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+}
+#game canvas { display: block; }
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* ---- top bar: counter + sound */
+#hud {
+  position: fixed;
+  top: calc(12px + var(--safe-t));
+  left: calc(12px + var(--safe-l));
+  right: calc(12px + var(--safe-r));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+#hud[hidden] { display: none; }
+#hud > * { pointer-events: auto; }
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 16px 0 8px;
+  border-radius: 24px;
+  background: rgba(255, 250, 240, 0.92);
+  box-shadow: 0 2px 8px rgba(40, 60, 30, 0.2);
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.pill img { width: 36px; height: 36px; object-fit: contain; }
+.pill.bump { animation: bump 0.4s ease-out; }
+@keyframes bump { 40% { transform: scale(1.15); } }
+
+.round {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 250, 240, 0.92);
+  box-shadow: 0 2px 8px rgba(40, 60, 30, 0.2);
+}
+.round svg { width: 26px; height: 26px; }
+.round .off { display: none; }
+.round.muted .on { display: none; }
+.round.muted .off { display: inline; }
+
+/* ---- arrow at the screen edge pointing to Mama Duck */
+#arrow {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  border-radius: 50%;
+  background: rgba(255, 250, 240, 0.95);
+  box-shadow: 0 2px 8px rgba(40, 60, 30, 0.25);
+  display: grid;
+  place-items: center;
+  animation: nudge 1.2s ease-in-out infinite;
+}
+#arrow[hidden] { display: none; }
+#arrow img { width: 38px; height: 38px; object-fit: contain; }
+#arrow .tip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 14px solid var(--card);
+  transform: translate(-50%, -50%) rotate(var(--a, 0deg)) translateY(-38px);
+}
+@keyframes nudge { 50% { scale: 1.08; } }
+
+/* ---- small message at the bottom */
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(20px + var(--safe-b));
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  padding: 12px 20px;
+  border-radius: 24px;
+  background: rgba(74, 50, 34, 0.9);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+}
+#toast[hidden] { display: block; opacity: 0; transform: translate(-50%, 12px); }
+
+/* ---- start and win cards */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: calc(16px + var(--safe-t)) calc(16px + var(--safe-r)) calc(16px + var(--safe-b)) calc(16px + var(--safe-l));
+  background: rgba(30, 70, 90, 0.35);
+}
+.overlay[hidden] { display: none; }
+
+.card {
+  width: min(360px, 100%);
+  padding: 24px 24px 20px;
+  border-radius: 28px;
+  background: var(--card);
+  box-shadow: 0 10px 30px rgba(20, 40, 30, 0.3);
+  text-align: center;
+  animation: pop 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+@keyframes pop { from { transform: scale(0.85); opacity: 0; } }
+
+.card .hero { width: 72px; height: 72px; object-fit: contain; }
+.card h1 { margin: 8px 0 6px; font-size: 30px; line-height: 1.1; }
+.card p { margin: 0 0 18px; font-size: 18px; line-height: 1.35; }
+.card .how { margin: 14px 0 0; font-size: 15px; opacity: 0.7; }
+
+.big {
+  width: 100%;
+  min-height: 60px;
+  border-radius: 20px;
+  background: var(--yellow);
+  box-shadow: 0 5px 0 var(--yellow-dark);
+  font-size: 24px;
+  font-weight: 800;
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+.big:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--yellow-dark); }
+.big:disabled { opacity: 0.6; cursor: default; }
+
+/* short landscape phones: keep the card compact */
+@media (max-height: 420px) {
+  .card { padding: 14px 20px; }
+  .card .hero { width: 48px; height: 48px; }
+  .card h1 { font-size: 24px; }
+  .card p { font-size: 16px; margin-bottom: 12px; }
+  .big { min-height: 52px; font-size: 20px; }
+}
+
+/* ---- "Sail to ..." button at the dock */
+.sail {
+  position: fixed;
+  left: 50%;
+  top: calc(72px + var(--safe-t)); /* under the counter, so it never covers the dock and boat */
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 0 24px 0 14px;
+  border-radius: 30px;
+  background: var(--yellow);
+  box-shadow: 0 5px 0 var(--yellow-dark), 0 4px 14px rgba(20, 40, 30, 0.25);
+  font-size: 21px;
+  font-weight: 800;
+  white-space: nowrap;
+  animation: pop 0.3s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.sail[hidden] { display: none; }
+.sail:active { transform: translate(-50%, 4px); box-shadow: 0 1px 0 var(--yellow-dark); }
+.sail img, .big img { width: 40px; height: 26px; object-fit: contain; }
+
+.big.quiet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+  min-height: 52px;
+  font-size: 19px;
+  background: transparent;
+  box-shadow: inset 0 0 0 3px var(--yellow-dark);
+}
+.big.quiet:active { transform: translateY(2px); box-shadow: inset 0 0 0 3px var(--yellow-dark); }

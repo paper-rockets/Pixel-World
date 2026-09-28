@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "x-phaser",
+      "runtimeExecutable": "powershell.exe",
+      "runtimeArgs": [
+        "-Command",
+        "Set-Location 'E:\\X Phaser'; npm run dev"
+      ],
+      "port": 8180
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+<title>Orange Garden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&display=swap" />
+<style>
+:root{--ink:#4a3222;--card:#fffaf0;--yellow:#ffd23f;--yellow-dark:#e0a800;--water:#4cc1e6;--safe-t:env(safe-area-inset-top,0px);--safe-r:env(safe-area-inset-right,0px);--safe-b:env(safe-area-inset-bottom,0px);--safe-l:env(safe-area-inset-left,0px);--font:"Nunito", ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif}*{box-sizing:border-box}html,body{font:16px/1.3 var(--font);color:var(--ink);background:var(--water);overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;height:100%;margin:0;overflow:hidden}#game{touch-action:none;position:fixed;inset:0}#game canvas{display:block}button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;border:0}#hud{top:calc(12px + var(--safe-t));left:calc(12px + var(--safe-l));right:calc(12px + var(--safe-r));pointer-events:none;justify-content:space-between;align-items:center;display:flex;position:fixed}#hud[hidden]{display:none}#hud>*{pointer-events:auto}.pill{font-variant-numeric:tabular-nums;background:#fffaf0eb;border-radius:24px;align-items:center;gap:8px;height:48px;padding:0 16px 0 8px;font-size:22px;font-weight:800;display:flex;box-shadow:0 2px 8px #283c1e33}.pill img{object-fit:contain;width:36px;height:36px}.pill.bump{animation:.4s ease-out bump}@keyframes bump{40%{transform:scale(1.15)}}.round{background:#fffaf0eb;border-radius:50%;place-items:center;width:48px;height:48px;display:grid;box-shadow:0 2px 8px #283c1e33}.round svg{width:26px;height:26px}.round .off,.round.muted .on{display:none}.round.muted .off{display:inline}#arrow{background:#fffaf0f2;border-radius:50%;place-items:center;width:56px;height:56px;margin:-28px 0 0 -28px;animation:1.2s ease-in-out infinite nudge;display:grid;position:fixed;top:0;left:0;box-shadow:0 2px 8px #283c1e40}#arrow[hidden]{display:none}#arrow img{object-fit:contain;width:38px;height:38px}#arrow .tip{border-left:10px solid #0000;border-right:10px solid #0000;border-bottom:14px solid var(--card);width:0;height:0;transform:translate(-50%, -50%) rotate(var(--a,0deg)) translateY(-38px);position:absolute;top:50%;left:50%}@keyframes nudge{50%{scale:1.08}}#toast{left:50%;bottom:calc(20px + var(--safe-b));color:#fff;text-align:center;pointer-events:none;background:#4a3222e6;border-radius:24px;max-width:calc(100% - 32px);padding:12px 20px;font-size:18px;font-weight:700;transition:opacity .3s,transform .3s;position:fixed;transform:translate(-50%)}#toast[hidden]{opacity:0;display:block;transform:translate(-50%,12px)}.overlay{padding:calc(16px + var(--safe-t)) calc(16px + var(--safe-r)) calc(16px + var(--safe-b)) calc(16px + var(--safe-l));background:#1e465a59;place-items:center;display:grid;position:fixed;inset:0}.overlay[hidden]{display:none}.card{background:var(--card);text-align:center;border-radius:28px;width:min(360px,100%);padding:24px 24px 20px;animation:.35s cubic-bezier(.2,1.4,.4,1) pop;box-shadow:0 10px 30px #14281e4d}@keyframes pop{0%{opacity:0;transform:scale(.85)}}.card .hero{object-fit:contain;width:72px;height:72px}.card h1{margin:8px 0 6px;font-size:30px;line-height:1.1}.card p{margin:0 0 18px;font-size:18px;line-height:1.35}.card .how{opacity:.7;margin:14px 0 0;font-size:15px}.big{background:var(--yellow);width:100%;min-height:60px;box-shadow:0 5px 0 var(--yellow-dark);border-radius:20px;font-size:24px;font-weight:800;transition:transform 80ms,box-shadow 80ms}.big:active{box-shadow:0 1px 0 var(--yellow-dark);transform:translateY(4px)}.big:disabled{opacity:.6;cursor:default}@media (height<=420px){.card{padding:14px 20px}.card .hero{width:48px;height:48px}.card h1{font-size:24px}.card p{margin-bottom:12px;font-size:16px}.big{min-height:52px;font-size:20px}}.sail{left:50%;top:calc(72px + var(--safe-t));background:var(--yellow);min-height:60px;box-shadow:0 5px 0 var(--yellow-dark), 0 4px 14px #14281e40;white-space:nowrap;border-radius:30px;align-items:center;gap:10px;padding:0 24px 0 14px;font-size:21px;font-weight:800;animation:.3s cubic-bezier(.2,1.4,.4,1) pop;display:flex;position:fixed;transform:translate(-50%)}.sail[hidden]{display:none}.sail:active{box-shadow:0 1px 0 var(--yellow-dark);transform:translate(-50%,4px)}.sail img,.big img{object-fit:contain;width:40px;height:26px}.big.quiet{min-height:52px;box-shadow:inset 0 0 0 3px var(--yellow-dark);background:0 0;justify-content:center;align-items:center;gap:10px;margin-top:12px;font-size:19px;display:flex}.big.quiet:active{box-shadow:inset 0 0 0 3px var(--yellow-dark);transform:translateY(2px)}
+
+</style>
+<div id="game"></div>
+
+    <div id="hud" hidden>
+      <div class="pill" aria-live="polite">
+        <img src="school/ui_flower.png" alt="" />
+        <span id="count">0 / 5</span>
+      </div>
+      <button id="sound" class="round" aria-label="Sound on or off">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" />
+          <path class="on" d="M16 8.5a4.5 4.5 0 0 1 0 7M18.5 6a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path class="off" d="M16.5 9.5l5 5M21.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <button id="arrow" hidden aria-label="Go to the garden">
+      <img src="school/ui_garden.png" alt="" />
+      <span class="tip"></span>
+    </button>
+
+    <button id="sail" class="sail" hidden>
+      <img src="boat/icon.png" alt="" />
+      <span>Sail</span>
+    </button>
+
+    <div id="toast" role="status" hidden></div>
+
+    <div id="start" class="overlay">
+      <div class="card">
+        <img class="hero" src="school/ui_flower.png" alt="" />
+        <h1>Orange Garden</h1>
+        <p>Find <b>5</b> orange flowers around the school and plant them in the garden.</p>
+        <button id="play" class="big" disabled>Loading…</button>
+        <p class="how" id="how">Tap or hold to walk</p>
+      </div>
+    </div>
+
+    <div id="win" class="overlay" hidden>
+      <div class="card">
+        <img class="hero" src="school/ui_garden.png" alt="" />
+        <h1>The garden is blooming</h1>
+        <p>Thank you for helping it grow.</p>
+        <button id="again" class="big">Play again</button>
+        <button id="winSail" class="big quiet"><img src="boat/icon.png" alt="" /><span>Sail</span></button>
+      </div>
+    </div>
+<script type="module" crossorigin src="./assets/school-BqsVYX7j.js"></script>

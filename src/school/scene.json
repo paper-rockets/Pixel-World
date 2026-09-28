@@ -1,0 +1,52 @@
+{
+  "note": "Willingdon School island. x, y = where each thing touches the ground (bottom middle), in pixels on the 1448 x 1086 ground picture. scale = size compared with the source picture. solid = the capybara can't walk through its base.",
+  "size": [1448, 1086],
+  "start": [724, 900],
+  "exit": { "x": 724, "y": 1000, "r": 40 },
+  "boat": { "x": 848, "y": 1022, "dir": "right", "board": [744, 1016] },
+  "walkRects": [[692, 930, 756, 1030]],
+  "blockRects": [[390, 40, 1060, 548]],
+  "objects": [
+    { "id": "school", "file": "objects/school/school_map_ready_700px.png", "x": 724, "y": 560, "scale": 1, "solid": false },
+    { "id": "playground", "file": "objects/school_props/playground_green_slide.png", "x": 345, "y": 613, "scale": 0.85 },
+    { "id": "garden", "file": "objects/school_props/remembrance_garden.png", "x": 950, "y": 704, "scale": 1, "role": "garden" },
+    { "id": "court-lines", "file": "objects/schoolyard/court_lines_hopscotch.png", "x": 1212, "y": 600, "scale": 1, "ground": true },
+    { "id": "hoop", "file": "objects/schoolyard/basketball_hoop.png", "x": 1212, "y": 378, "scale": 0.73 },
+    { "id": "flag", "file": "objects/schoolyard/flagpole_canada.png", "x": 1040, "y": 600, "scale": 0.9 },
+    { "id": "bikes", "file": "objects/schoolyard/bike_rack.png", "x": 1195, "y": 700, "scale": 0.67 },
+    { "id": "bench", "file": "objects/schoolyard/bench.png", "x": 540, "y": 700, "scale": 0.6 },
+
+    { "id": "flower-1", "file": "objects/school_props/orange_flower_collectible_01.png", "x": 256, "y": 752, "scale": 0.65, "role": "flower", "solid": false },
+    { "id": "flower-2", "file": "objects/school_props/orange_flower_collectible_02.png", "x": 150, "y": 290, "scale": 0.65, "role": "flower", "solid": false },
+    { "id": "flower-3", "file": "objects/school_props/orange_flower_collectible_03.png", "x": 1262, "y": 250, "scale": 0.65, "role": "flower", "solid": false },
+    { "id": "flower-4", "file": "objects/school_props/orange_flower_collectible_04.png", "x": 976, "y": 858, "scale": 0.65, "role": "flower", "solid": false },
+    { "id": "flower-5", "file": "objects/school_props/orange_flower_collectible_05.png", "x": 1330, "y": 640, "scale": 0.65, "role": "flower", "solid": false },
+
+    { "id": "tree-top-left", "file": "objects/nature/tree_02.png", "x": 240, "y": 322, "scale": 0.72 },
+    { "id": "tree-top-right", "file": "objects/nature/tree_05.png", "x": 1160, "y": 252, "scale": 0.68 },
+    { "id": "tree-pink", "file": "objects/nature/tree_03.png", "x": 1345, "y": 345, "scale": 0.66 },
+    { "id": "tree-bottom-left", "file": "objects/nature/tree_04.png", "x": 150, "y": 690, "scale": 0.72 },
+    { "id": "tree-bottom-right", "file": "objects/nature/tree_06.png", "x": 1310, "y": 785, "scale": 0.68 },
+    { "id": "palm-beach", "file": "objects/nature/tree_01.png", "x": 1360, "y": 880, "scale": 0.62 },
+
+    { "id": "bush-steps-left", "file": "objects/nature/bush_large_04.png", "x": 630, "y": 598, "scale": 0.62 },
+    { "id": "bush-steps-right", "file": "objects/nature/bush_large_07.png", "x": 862, "y": 598, "scale": 0.62 },
+    { "id": "bush-lawn", "file": "objects/nature/bush_large_06.png", "x": 420, "y": 760, "scale": 0.62 },
+    { "id": "bush-left-edge", "file": "objects/nature/bush_small_03.png", "x": 100, "y": 470, "scale": 0.66 },
+    { "id": "bush-top-left", "file": "objects/nature/bush_large_02.png", "x": 360, "y": 205, "scale": 0.62 },
+    { "id": "bush-garden-side", "file": "objects/nature/bush_small_10.png", "x": 1070, "y": 790, "scale": 0.62 },
+
+    { "id": "rock-left", "file": "objects/nature/rock_02.png", "x": 80, "y": 590, "scale": 0.62 },
+    { "id": "rocks-right", "file": "objects/nature/rock_04.png", "x": 1395, "y": 560, "scale": 0.6 },
+    { "id": "rock-small", "file": "objects/nature/rock_07.png", "x": 620, "y": 790, "scale": 0.8 },
+    { "id": "log", "file": "objects/nature/log_01.png", "x": 300, "y": 690, "scale": 0.6 },
+    { "id": "stump", "file": "objects/nature/stump_02.png", "x": 1088, "y": 168, "scale": 0.6 },
+    { "id": "mushrooms", "file": "objects/nature/mushroom_05.png", "x": 200, "y": 715, "scale": 0.5, "solid": false },
+    { "id": "reeds", "file": "objects/nature/reed_03.png", "x": 1215, "y": 870, "scale": 0.55, "solid": false },
+
+    { "id": "lamp-left", "file": "objects/structures/sign_or_lantern_01.png", "x": 684, "y": 700, "scale": 0.6 },
+    { "id": "lamp-right", "file": "objects/structures/sign_or_lantern_02.png", "x": 826, "y": 690, "scale": 0.6 },
+
+    { "id": "dock", "file": "objects/dock_clean/dock_segment_vertical.png", "x": 724, "y": 1060, "scale": 0.6, "solid": false, "under": true }
+  ]
+}

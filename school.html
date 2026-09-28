@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#3fc3ea" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Orange Garden</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&display=swap" />
+  </head>
+  <body class="school">
+    <div id="game"></div>
+
+    <div id="hud" hidden>
+      <div class="pill" aria-live="polite">
+        <img src="school/ui_flower.png" alt="" />
+        <span id="count">0 / 5</span>
+      </div>
+      <button id="sound" class="round" aria-label="Sound on or off">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" />
+          <path class="on" d="M16 8.5a4.5 4.5 0 0 1 0 7M18.5 6a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path class="off" d="M16.5 9.5l5 5M21.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <button id="arrow" hidden aria-label="Go to the garden">
+      <img src="school/ui_garden.png" alt="" />
+      <span class="tip"></span>
+    </button>
+
+    <button id="sail" class="sail" hidden>
+      <img src="boat/icon.png" alt="" />
+      <span>Sail</span>
+    </button>
+
+    <div id="toast" role="status" hidden></div>
+
+    <div id="start" class="overlay">
+      <div class="card">
+        <img class="hero" src="school/ui_flower.png" alt="" />
+        <h1>Orange Garden</h1>
+        <p>Find <b>5</b> orange flowers around the school and plant them in the garden.</p>
+        <button id="play" class="big" disabled>Loading…</button>
+        <p class="how" id="how">Tap or hold to walk</p>
+      </div>
+    </div>
+
+    <div id="win" class="overlay" hidden>
+      <div class="card">
+        <img class="hero" src="school/ui_garden.png" alt="" />
+        <h1>The garden is blooming</h1>
+        <p>Thank you for helping it grow.</p>
+        <button id="again" class="big">Play again</button>
+        <button id="winSail" class="big quiet"><img src="boat/icon.png" alt="" /><span>Sail</span></button>
+      </div>
+    </div>
+
+    <script type="module" src="/src/school/main.js"></script>
+  </body>
+</html>

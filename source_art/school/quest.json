@@ -1,0 +1,22 @@
+{
+  "id": "help_the_orange_garden_bloom",
+  "title": "Help the Orange Garden Bloom",
+  "event": "Orange Shirt Day",
+  "objective": "Collect five orange flowers and bring them to the remembrance garden.",
+  "collectible_object_ids": [
+    "orange-flower-1",
+    "orange-flower-2",
+    "orange-flower-3",
+    "orange-flower-4",
+    "orange-flower-5"
+  ],
+  "required_count": 5,
+  "turn_in_object_id": "remembrance-garden",
+  "timer": false,
+  "score": false,
+  "coins": false,
+  "completion_audio": "audio/yay_chime.wav",
+  "pickup_audio": "audio/pickup_blip.wav",
+  "completion_effect": "garden_gently_glows_and_blooms"
+}
+

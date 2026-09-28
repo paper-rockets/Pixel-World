@@ -1,0 +1,613 @@
+{
+ "size": [
+  1448,
+  1086
+ ],
+ "start": [
+  724,
+  900
+ ],
+ "exit": {
+  "x": 724,
+  "y": 1000,
+  "r": 40
+ },
+ "boat": {
+  "x": 848,
+  "y": 1022,
+  "dir": "right",
+  "board": [
+   744,
+   1016
+  ]
+ },
+ "walk": {
+  "file": "walk.png",
+  "cell": 2
+ },
+ "objects": [
+  {
+   "id": "school",
+   "key": "school",
+   "x": 381.0,
+   "y": 38,
+   "w": 686,
+   "h": 522,
+   "base": 560,
+   "role": null,
+   "ground": false,
+   "foot": null
+  },
+  {
+   "id": "playground",
+   "key": "playground",
+   "x": 229.0,
+   "y": 363,
+   "w": 232,
+   "h": 250,
+   "base": 613,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 345.0,
+    "y": 599.0,
+    "rx": 106.7,
+    "ry": 14.0
+   }
+  },
+  {
+   "id": "garden",
+   "key": "garden",
+   "x": 837.0,
+   "y": 562,
+   "w": 226,
+   "h": 142,
+   "base": 704,
+   "role": "garden",
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 950,
+    "y": 644.4,
+    "rx": 104.0,
+    "ry": 56.8
+   }
+  },
+  {
+   "id": "court-lines",
+   "key": "court-lines",
+   "x": 1081.0,
+   "y": 378,
+   "w": 262,
+   "h": 222,
+   "base": 600,
+   "role": null,
+   "ground": true,
+   "foot": null
+  },
+  {
+   "id": "hoop",
+   "key": "hoop",
+   "x": 1181.0,
+   "y": 252,
+   "w": 62,
+   "h": 126,
+   "base": 378,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 1212.0,
+    "y": 364.0,
+    "rx": 12.0,
+    "ry": 14.0
+   }
+  },
+  {
+   "id": "flag",
+   "key": "flag",
+   "x": 1003.0,
+   "y": 462,
+   "w": 74,
+   "h": 138,
+   "base": 600,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 1019.0,
+    "y": 586.0,
+    "rx": 14.7,
+    "ry": 14.0
+   }
+  },
+  {
+   "id": "bikes",
+   "key": "bikes",
+   "x": 1125.0,
+   "y": 634,
+   "w": 140,
+   "h": 66,
+   "base": 700,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 1195.0,
+    "y": 692.1,
+    "rx": 64.4,
+    "ry": 7.9
+   }
+  },
+  {
+   "id": "bench",
+   "key": "bench",
+   "x": 487.0,
+   "y": 644,
+   "w": 106,
+   "h": 56,
+   "base": 700,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 540.0,
+    "y": 693.3,
+    "rx": 46.9,
+    "ry": 6.7
+   }
+  },
+  {
+   "id": "flower-1",
+   "key": "flower-1",
+   "x": 240.0,
+   "y": 710,
+   "w": 32,
+   "h": 42,
+   "base": 752,
+   "role": "flower",
+   "ground": false,
+   "foot": null
+  },
+  {
+   "id": "flower-2",
+   "key": "flower-2",
+   "x": 134.0,
+   "y": 248,
+   "w": 32,
+   "h": 42,
+   "base": 290,
+   "role": "flower",
+   "ground": false,
+   "foot": null
+  },
+  {
+   "id": "flower-3",
+   "key": "flower-3",
+   "x": 1246.0,
+   "y": 208,
+   "w": 32,
+   "h": 42,
+   "base": 250,
+   "role": "flower",
+   "ground": false,
+   "foot": null
+  },
+  {
+   "id": "flower-4",
+   "key": "flower-4",
+   "x": 960.0,
+   "y": 816,
+   "w": 32,
+   "h": 42,
+   "base": 858,
+   "role": "flower",
+   "ground": false,
+   "foot": null
+  },
+  {
+   "id": "flower-5",
+   "key": "flower-5",
+   "x": 1314.0,
+   "y": 598,
+   "w": 32,
+   "h": 42,
+   "base": 640,
+   "role": "flower",
+   "ground": false,
+   "foot": null
+  },
+  {
+   "id": "tree-top-left",
+   "key": "tree-top-left",
+   "x": 159.0,
+   "y": 134,
+   "w": 162,
+   "h": 188,
+   "base": 322,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 243.0,
+    "y": 308.0,
+    "rx": 60.7,
+    "ry": 14.0
+   }
+  },
+  {
+   "id": "tree-top-right",
+   "key": "tree-top-right",
+   "x": 1081.0,
+   "y": 82,
+   "w": 158,
+   "h": 170,
+   "base": 252,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 1164.0,
+    "y": 238.0,
+    "rx": 50.6,
+    "ry": 14.0
+   }
+  },
+  {
+   "id": "tree-pink",
+   "key": "tree-pink",
+   "x": 1271.0,
+   "y": 177,
+   "w": 148,
+   "h": 168,
+   "base": 345,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 1345.0,
+    "y": 331.0,
+    "rx": 58.9,
+    "ry": 14.0
+   }
+  },
+  {
+   "id": "tree-bottom-left",
+   "key": "tree-bottom-left",
+   "x": 73.0,
+   "y": 508,
+   "w": 154,
+   "h": 182,
+   "base": 690,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 150.0,
+    "y": 676.0,
+    "rx": 63.5,
+    "ry": 14.0
+   }
+  },
+  {
+   "id": "tree-bottom-right",
+   "key": "tree-bottom-right",
+   "x": 1236.0,
+   "y": 615,
+   "w": 148,
+   "h": 170,
+   "base": 785,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 1309.0,
+    "y": 771.0,
+    "rx": 52.4,
+    "ry": 14.0
+   }
+  },
+  {
+   "id": "palm-beach",
+   "key": "palm-beach",
+   "x": 1287.0,
+   "y": 712,
+   "w": 146,
+   "h": 168,
+   "base": 880,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 1371.0,
+    "y": 866.0,
+    "rx": 40.5,
+    "ry": 14.0
+   }
+  },
+  {
+   "id": "bush-steps-left",
+   "key": "bush-steps-left",
+   "x": 586.0,
+   "y": 518,
+   "w": 88,
+   "h": 80,
+   "base": 598,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 629.0,
+    "y": 588.4,
+    "rx": 34.0,
+    "ry": 9.6
+   }
+  },
+  {
+   "id": "bush-steps-right",
+   "key": "bush-steps-right",
+   "x": 818.0,
+   "y": 518,
+   "w": 88,
+   "h": 80,
+   "base": 598,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 863.0,
+    "y": 588.4,
+    "rx": 35.9,
+    "ry": 9.6
+   }
+  },
+  {
+   "id": "bush-lawn",
+   "key": "bush-lawn",
+   "x": 375.0,
+   "y": 680,
+   "w": 90,
+   "h": 80,
+   "base": 760,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 419.0,
+    "y": 750.4,
+    "rx": 35.0,
+    "ry": 9.6
+   }
+  },
+  {
+   "id": "bush-left-edge",
+   "key": "bush-left-edge",
+   "x": 67.0,
+   "y": 410,
+   "w": 66,
+   "h": 60,
+   "base": 470,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 100.0,
+    "y": 462.8,
+    "rx": 26.7,
+    "ry": 7.2
+   }
+  },
+  {
+   "id": "bush-top-left",
+   "key": "bush-top-left",
+   "x": 311.0,
+   "y": 123,
+   "w": 98,
+   "h": 82,
+   "base": 205,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 363.0,
+    "y": 195.2,
+    "rx": 42.3,
+    "ry": 9.8
+   }
+  },
+  {
+   "id": "bush-garden-side",
+   "key": "bush-garden-side",
+   "x": 1039.0,
+   "y": 734,
+   "w": 62,
+   "h": 56,
+   "base": 790,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 1069.0,
+    "y": 783.3,
+    "rx": 23.9,
+    "ry": 6.7
+   }
+  },
+  {
+   "id": "rock-left",
+   "key": "rock-left",
+   "x": 44.0,
+   "y": 528,
+   "w": 72,
+   "h": 62,
+   "base": 590,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 79.0,
+    "y": 582.6,
+    "rx": 30.4,
+    "ry": 7.4
+   }
+  },
+  {
+   "id": "rocks-right",
+   "key": "rocks-right",
+   "x": 1363.0,
+   "y": 504,
+   "w": 64,
+   "h": 56,
+   "base": 560,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 1397.0,
+    "y": 553.3,
+    "rx": 27.6,
+    "ry": 6.7
+   }
+  },
+  {
+   "id": "rock-small",
+   "key": "rock-small",
+   "x": 601.0,
+   "y": 762,
+   "w": 38,
+   "h": 28,
+   "base": 790,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 620.0,
+    "y": 784.0,
+    "rx": 15.6,
+    "ry": 6.0
+   }
+  },
+  {
+   "id": "log",
+   "key": "log",
+   "x": 255.0,
+   "y": 634,
+   "w": 90,
+   "h": 56,
+   "base": 690,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 296.0,
+    "y": 683.3,
+    "rx": 35.9,
+    "ry": 6.7
+   }
+  },
+  {
+   "id": "stump",
+   "key": "stump",
+   "x": 1053.0,
+   "y": 112,
+   "w": 70,
+   "h": 56,
+   "base": 168,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 1086.0,
+    "y": 161.3,
+    "rx": 30.4,
+    "ry": 6.7
+   }
+  },
+  {
+   "id": "mushrooms",
+   "key": "mushrooms",
+   "x": 180.0,
+   "y": 679,
+   "w": 40,
+   "h": 36,
+   "base": 715,
+   "role": null,
+   "ground": false,
+   "foot": null
+  },
+  {
+   "id": "reeds",
+   "key": "reeds",
+   "x": 1186.0,
+   "y": 778,
+   "w": 58,
+   "h": 92,
+   "base": 870,
+   "role": null,
+   "ground": false,
+   "foot": null
+  },
+  {
+   "id": "lamp-left",
+   "key": "lamp-left",
+   "x": 655.0,
+   "y": 608,
+   "w": 58,
+   "h": 92,
+   "base": 700,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 675.0,
+    "y": 689.0,
+    "rx": 18.4,
+    "ry": 11.0
+   }
+  },
+  {
+   "id": "lamp-right",
+   "key": "lamp-right",
+   "x": 799.0,
+   "y": 608,
+   "w": 54,
+   "h": 82,
+   "base": 690,
+   "role": null,
+   "ground": false,
+   "foot": {
+    "type": "ellipse",
+    "x": 818.0,
+    "y": 680.2,
+    "rx": 17.5,
+    "ry": 9.8
+   }
+  },
+  {
+   "id": "dock",
+   "key": "dock",
+   "x": 671.0,
+   "y": 894,
+   "w": 106,
+   "h": 166,
+   "base": 1060,
+   "role": null,
+   "ground": true,
+   "foot": null
+  }
+ ],
+ "blockRects": [
+  [
+   390,
+   40,
+   1060,
+   548
+  ]
+ ],
+ "capy": {
+  "frameWidth": 180,
+  "frameHeight": 160,
+  "frames": 16
+ }
+}

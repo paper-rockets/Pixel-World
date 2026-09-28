@@ -1,0 +1,36 @@
+{
+  "format_version": 1,
+  "directions": ["up", "down", "left", "right"],
+  "assets": {
+    "empty": "objects/boat/boat_empty_{direction}.png",
+    "with_player": "objects/boat/boat_capy_{direction}.png",
+    "wake_frames": "objects/boat/wake/wake_{direction}_{frame}.png",
+    "wake_frame_count": 4
+  },
+  "animation": {
+    "wake_fps": 8,
+    "bobbing_amplitude_px": 3,
+    "bobbing_period_ms": 850,
+    "departure_duration_ms": 1600,
+    "fade_out_ms": 300,
+    "map_load_during_fade": true,
+    "fade_in_ms": 300,
+    "arrival_duration_ms": 1600
+  },
+  "sequence": [
+    "disable_player_control",
+    "hide_player_sprite",
+    "swap_empty_boat_for_passenger_boat",
+    "play_departure_tween_with_wake",
+    "fade_out_and_load_destination",
+    "play_arrival_tween_with_wake",
+    "swap_passenger_boat_for_empty_boat",
+    "show_player_on_reachable_sand",
+    "enable_player_control"
+  ],
+  "notes": [
+    "Move the stable boat sprite in code; do not redraw the hull per animation frame.",
+    "Use the wake loop only while velocity is non-zero.",
+    "A 180-degree direction change uses a dedicated pre-rotated lossless PNG."
+  ]
+}

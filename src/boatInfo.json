@@ -1,0 +1,48 @@
+{
+ "sizes": {
+  "boat_empty_up": [
+   90,
+   138
+  ],
+  "boat_empty_down": [
+   90,
+   138
+  ],
+  "boat_empty_left": [
+   138,
+   90
+  ],
+  "boat_empty_right": [
+   138,
+   90
+  ],
+  "boat_capy_up": [
+   90,
+   138
+  ],
+  "boat_capy_down": [
+   90,
+   138
+  ],
+  "boat_capy_left": [
+   138,
+   90
+  ],
+  "boat_capy_right": [
+   138,
+   90
+  ],
+  "wake_up": [
+   106,
+   88
+  ],
+  "wake_down": [
+   106,
+   88
+  ]
+ },
+ "wakeTip": {
+  "down": 0.84,
+  "up": 0.12
+ }
+}

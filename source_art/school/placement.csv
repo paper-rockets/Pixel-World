@@ -1,0 +1,14 @@
+id,file,x,y,width,height,z
+school,objects/school/school_map_ready_700px.png,374,24,700,536,100
+playground,objects/school_props/playground_green_slide.png,205,312,280,301,80
+remembrance-garden,objects/school_props/remembrance_garden.png,820,555,230,146,70
+court-lines-hopscotch,objects/schoolyard/court_lines_hopscotch.png,1074,364,276,236,20
+basketball-hoop,objects/schoolyard/basketball_hoop.png,1167,300,90,177,82
+flagpole,objects/schoolyard/flagpole_canada.png,980,370,85,156,86
+bike-rack,objects/schoolyard/bike_rack.png,1090,615,210,101,78
+bench,objects/schoolyard/bench.png,1190,730,180,97,78
+orange-flower-1,objects/school_props/orange_flower_collectible_01.png,230,690,52,68,60
+orange-flower-2,objects/school_props/orange_flower_collectible_02.png,450,700,52,68,60
+orange-flower-3,objects/school_props/orange_flower_collectible_03.png,760,735,52,68,60
+orange-flower-4,objects/school_props/orange_flower_collectible_04.png,950,790,52,68,60
+orange-flower-5,objects/school_props/orange_flower_collectible_05.png,1060,735,52,68,60
