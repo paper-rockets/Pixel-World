@@ -1,15 +1,20 @@
 # Handoff: Capybara Islands (Phaser game)
 
-Last updated 2026-09-28. Read this first before changing anything in `E:\X Phaser`.
+Last updated 2026-09-28 (second session). Read this first before changing anything in `E:\X Phaser`.
+
+The folder is also on GitHub now: `paper-rockets/pixel-world`, work branch `claude/pixel-word-i-project-1c0cdp`. Cloud sessions (claude.ai/code) work in a fresh Linux copy of it, commit there and push to that branch; bring the changes to the PC with `git pull`.
 
 ## Right now
 
-**Waiting for Codex art for the big Sunny Meadow.** The user asked to pause after the Codex prompt was written.
+**The first Codex island came back and needs fixes. The user decides: send the fix request to Codex, or approve it as it is.**
 
-- The prompt is `concepts/archipelago/CODEX_PROMPT.md`. It is art only: Codex may only add new files in `source_art/archipelago/`.
-- Codex makes `source_art/archipelago/ground/sw_campfire.png` first and stops.
-- **Next step:** compare that picture with `source_art/tiny_map.png` for style, pixel size, scale, palette, view angle and light. It must be ground only: no trees, rocks, fences and so on. Tell the user what matches and what doesn't, so they can approve it or send fixes to Codex.
-- The game in the folder is the normal small Sunny Meadow and works. The two published links show the same version.
+- Codex delivered `source_art/archipelago/ground/sw_campfire.png`. It was checked on 2026-09-28 with `tools/review_island.py`; the picture is `check/review_sw_campfire.png`.
+  - **Good:** the layout (round clearing, path from the north shore, stairs down the south cliff, beach), the island's size (830 × 719), the sea around it, ground only, the view and the pixel size. Water and beach sand colours match.
+  - **Doesn't match:** the grass is a stronger green (`#B0E02C`, home `#BBE056`) and one flat colour with no texture; the cliffs are round orange boulders (home: flat tan slabs with thin cracks); the path is more orange; the water is one flat blue with no shallow band or ripples; the path is about 40 px wide and the stairs about 50 px, only as wide as the capybara (50 px). Home paths are 60–75 px and the dock walkway is 80 px.
+- The fix request, ready to paste into Codex, is `concepts/archipelago/CODEX_FIX_1_sw_campfire.md`. Codex saves a new file, `sw_campfire_v2.png`, and stops.
+- `concepts/archipelago/CODEX_PROMPT.md` now has the palette measured from `tiny_map.png` (its old cliff colours were too orange), the cliff shape, a texture rule, and the real path and stair widths, so the other islands start right.
+- **Next step:** when `sw_campfire_v2.png` arrives, run `python tools/review_island.py source_art/archipelago/ground/sw_campfire_v2.png`, look at `check/review_sw_campfire_v2.png`, and tell the user what matches and what doesn't.
+- The game itself is the normal small Sunny Meadow and works. Both published links were updated on 2026-09-28 with the hiding-spot wiggle fix (Lost Ducklings version 9, Orange Garden version 5).
 
 See "Big Sunny Meadow" below for the full plan.
 
@@ -22,7 +27,7 @@ A small, kid-friendly, touch-first island game made with **Phaser 4.2.1** and **
 | Sunny Meadow | `play` | **Lost Ducklings**: find 5 hidden ducklings and walk them home to Mama Duck's pen | `index.html` | https://claude.ai/artifact/Bs7u7asAyYAcS7rZK4gPWU |
 | Willingdon School | `school` | **Help the Orange Garden Bloom**: find 5 orange flowers and plant them in the remembrance garden | `school.html` | https://claude.ai/artifact/GftTNSMgSK1qiTqHYBUWoo |
 
-Both pages contain both islands; each page just starts on its own island. There's no git repo in this folder; "commit" means save to disk.
+Both pages contain both islands; each page just starts on its own island.
 
 ## The user
 
@@ -53,6 +58,18 @@ node tools/headless_check.mjs 412 892 mobile poses    # puts the capybara at spo
 
 Screenshots go to `check/`. Opening a page with `?debug` exposes `window.game`. Many screenshots in one turn get dropped, so combine them into one contact sheet with PIL before viewing.
 
+- The scripts find Chrome by themselves (`findChrome` in `tools/cdp.mjs`): Chrome on the PC, or the Chromium that cloud containers have. `CHROME=<path>` picks another.
+- In a cloud container, run `npm ci` first. The Google font can't load there (the network proxy blocks it), so the test browser shows a fallback font and logs one font error. That isn't a game bug.
+- `check/` is in git, and test runs overwrite its screenshots. Put them back with `git checkout -- check/` unless the new ones are wanted.
+
+**Checking new island art from Codex:**
+
+```bash
+python tools/review_island.py source_art/archipelago/ground/<name>.png   # -> check/review_<name>.png
+```
+
+It compares each kind of ground (grass, path, beach sand, cliff face, water) with the home island (colour, colour strength, texture), checks the island's size and the sea around it, and measures how wide the paths are. The picture shows both islands where they are planned in the big map, close-ups next to the same kind of ground on the home island, the capybara on the narrowest path, and colour swatches. It needs Pillow, numpy, scipy and OpenCV (in the cloud: `pip install pillow numpy scipy opencv-python-headless`).
+
 **Publishing:** do this for both pages after every change, because they share code.
 
 ```bash
@@ -61,6 +78,9 @@ python tools/make_artifact.py school   # -> artifact/school/index.html + artifac
 ```
 
 Then publish with the Artifact tool: `file_path` = that `index.html`, `root` = `E:\X Phaser\dist`, `files` = the map in `files.json`. Set old JS file names to `null`, because JS names change on every build. Publishing to the same `file_path` keeps the same link.
+
+- From a new conversation (like a cloud session), first `read` each link, then publish with `url` = the link; `root` is the clone's `dist` folder. List the live files with `action: list, scope: files` to find the old JS names.
+- When only code changed, `files` only needs the new JS files plus `null` for the old ones; every picture and sound stays as it is.
 
 ## Where things are
 
@@ -81,7 +101,8 @@ Then publish with the Artifact tool: `file_path` = that `index.html`, `root` = `
 | `src/school/scene.json` | School layout: each object's ground point, scale, solid, role; start; boat |
 | `tools/pixelate.py` | Re-draws sprites on the islands' 2-pixel grid (`pixelate_mode` keeps eyes, flowers and outlines) |
 | `tools/build_world.py`, `tools/world_paint.py` | Claude's big-map generator (see below). The ground painting was rejected; the sea, the blending and the object placement are reusable. |
-| `concepts/archipelago/` | The chosen concept, one reference crop per island, and `CODEX_PROMPT.md` |
+| `tools/review_island.py` | Checks a Codex island picture against the home island and makes `check/review_<name>.png` (see "Checking new island art") |
+| `concepts/archipelago/` | The chosen concept, one reference crop per island, `CODEX_PROMPT.md`, and the fix requests (`CODEX_FIX_*.md`) |
 | `concepts/codex_attempt/` | Codex's broken 10x map, kept only for the record |
 | `AGENTS.md` | Codex's own instruction file. Codex also works in this folder. |
 
@@ -97,11 +118,11 @@ Then publish with the Artifact tool: `file_path` = that `index.html`, `root` = `
 8. **Ground painted in code doesn't match the painted islands.** The user rejected it as "style is mismatched". Ground must come from Codex as ground-only pictures.
 9. **Codex edits this folder too.** It rewrote `src/PlayScene.js` on 2026-09-28. Before editing, check file dates for recent changes, never work on the same files at the same time, and tell Codex to only add files in its own folder.
 10. **Fading one picture's water into another sea:** make the outer water see-through in a dither pattern on the art-pixel grid (2 x 2 map pixels), over about 44 map pixels from the edge. The join disappears completely (`public/world/home.webp`, made in `build_world.py`). Land cut off at a picture's edge needs a small cap of new land.
+11. **Codex doesn't follow bare numbers or palettes closely.** Asked for 90–110 px paths, it drew about 40, and it painted stronger colours than the palette it was given. Give every size a thing to match in `tiny_map.png` ("as wide as the path from the house to the dock"), and measure what comes back with `tools/review_island.py` instead of judging by eye.
 
 ## Known small issues
 
 - The passenger-boat picture shows the orange-shirt capybara on both islands, but the Sunny Meadow capybara has no shirt. The Codex prompt asks for plain-capybara boat pictures as an optional extra.
-- **The hiding-spot wiggle is too big.** When a duckling quacks, its bush or rock pops to about 1.7 times its size for a moment. In `PlayScene.js` the tween uses `s.scale` from `level.json` (0.58–0.85), but the cover is drawn at `SPOT_SCALE` 0.5. The fix is to tween relative to the drawn scale. Not fixed yet.
 - An empty stray folder `E:\X%20Phaser` exists, left by an old test script. Deleting it was blocked, so the user can delete it.
 
 ## Big Sunny Meadow (the current project)
