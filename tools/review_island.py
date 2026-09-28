@@ -85,7 +85,8 @@ def materials(img):
     cliff = (h < 40) & (s > 0.25) & (v > 0.35) & (v < 0.95) & ~sandy
     # a path runs between grass: sand bordered mostly by grass is path, and sand bordered mostly by
     # cliffs and sea is beach (a path can run right down to the sea, and paths and beaches can be
-    # painted in nearly the same colour, so neither tells them apart)
+    # painted in nearly the same colour, so neither tells them apart). A cove (sand between the
+    # grass and the sea) has grass on one side but plenty of sea on the other: that's beach too.
     beach = np.zeros_like(sandy)
     specks = np.zeros_like(sandy)
     greenish = (h > 55) & (h < 170) & (s > 0.2) & (v > 0.25)  # grass, including its dark edge lines
@@ -95,7 +96,7 @@ def materials(img):
         part = lab[sl] == i
         # look 5-12 px out, past the thin blend line along a path's edge
         ring = ndimage.binary_dilation(part, iterations=12) & ~ndimage.binary_dilation(part, iterations=5)
-        if greenish[sl][ring].mean() < 0.4:
+        if greenish[sl][ring].mean() < 0.4 or water[sl][ring].mean() > 0.2:   # real paths: 5% sea or less
             beach[sl] |= part
         elif part.sum() < 400:
             specks[sl] |= part      # a pale speck in the grass is not a path (match_island.py agrees)

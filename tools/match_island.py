@@ -13,7 +13,8 @@ Everything Codex drew keeps its shape: the coastline, cliffs, paths, stairs and 
 - the paths and stairs can be widened (see ISLANDS)
 
 Not handled yet: water inside an island (ponds, streams) is taken for land, and ground kinds the
-home island doesn't have (like tilled soil) are taken for the nearest kind it knows.
+home island doesn't have (like tilled soil) are taken for the nearest kind it knows. A see-through
+picture (an island without its water) is fine: the see-through part is taken for sea.
 
 Writes public/world/islands/<name>.png: the island's piece of the big map, with its land and its
 shore water, fading out by 80 px from the shore. If the land comes closer than that to the picture's
@@ -54,6 +55,9 @@ ISLANDS = {
     "se_meadow": {
         "stairs": [(748, 738, 860, 822)],   # already about 110 px wide
         "widen_path": 8,
+    },
+    "n_orchard": {
+        "widen_path": 8,                    # about 47 px wide as drawn
     },
 }
 MARGIN = 84   # sea needed around the land for the piece's water to fade out (80 px) without being cut
@@ -507,7 +511,9 @@ def main():
         sys.exit(__doc__)
     src = Path(args[0])
     name = re.sub(r"_v\d+$", "", src.stem)          # sw_campfire_v2 uses sw_campfire's settings
-    img = np.array(Image.open(src).convert("RGB"))
+    pic = np.array(Image.open(src).convert("RGBA"))
+    img = pic[..., :3].copy()
+    img[pic[..., 3] < 128] = SEA_BG                 # a see-through picture (land without its water): that part is sea
     cfg = ISLANDS.get(name, {})
     if "--masks" in sys.argv:
         # for setting up a new island: which kind of ground each pixel was taken for

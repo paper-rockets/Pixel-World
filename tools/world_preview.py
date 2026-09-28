@@ -1,13 +1,14 @@
 """Draws the big Sunny Meadow as it stands now, as one picture.
 
 Run from the game folder:  python tools/world_preview.py   ->  check/world_now.png
+Add --full for a full-size copy too (check/world_now_full.jpg, not kept in git).
 
 - the home island (public/assets/island.webp), its outer water faded into the sea
 - every island piece made so far by tools/match_island.py (public/world/islands/), in its planned
   place from tools/review_island.py's PLANNED
 - islands still to come: their concept pictures, faint, in their planned places
 - the planned bridges as dashed lines, between the nearest shores of each pair of islands
-- the islets (public/world/islands/islets.png), each placed in open sea for this picture only
+- the islets (public/world/islands/islets*.png), each placed in open sea for this picture only
 - the sea between the islands, sewn from the home island's open water, like the pieces' open water
 The picture is half size (the big map is 4608 x 3456), with names and a short legend.
 """
@@ -110,12 +111,19 @@ def split_islets(path):
     biggest first."""
     rgba = np.array(Image.open(path).convert("RGBA"))
     land = ndimage.binary_opening((rgba[..., 3] == 255) & ~water_of(rgba[..., :3]), iterations=2)
+    land = ndimage.binary_fill_holes(land)       # white flowers in the grass look like water
     lab, n = ndimage.label(land)
     sizes = ndimage.sum(land, lab, range(1, n + 1))
+    keep = 1 + np.flatnonzero(sizes >= 2000)
+    # which islet each bit of water belongs to: the nearest one (so no islet carries off the foam
+    # of a neighbour that stood close to it in the picture)
+    lab = np.where(np.isin(lab, keep), lab, 0)
+    dist, (iy, ix) = ndimage.distance_transform_edt(lab == 0, return_indices=True)
+    nearest = lab[iy, ix]
     out = []
-    for i in 1 + np.flatnonzero(sizes >= 2000):
+    for i in keep:
         mine = lab == i
-        near = ndimage.distance_transform_edt(~mine) <= 84
+        near = (dist <= 84) & (nearest == i)
         ys, xs = np.nonzero(near)
         box = (slice(ys.min(), ys.max() + 1), slice(xs.min(), xs.max() + 1))
         piece = rgba[box].copy()
@@ -192,10 +200,11 @@ def main():
             rgba, land = ghost(name, size)
             pieces.append((name, rgba, at, land, False))
 
-    islets_file = ISLANDS_DIR / "islets.png"
-    if islets_file.exists():
-        for piece, land, at in place_islets(split_islets(islets_file), pieces):
-            pieces.append(("islet", piece, at, land, True))
+    # every islets picture (islets.png, islets_2.png, ...), their islets mixed, biggest first
+    islets_files = sorted(ISLANDS_DIR.glob("islets*.png"))
+    islets = sorted((t for f in islets_files for t in split_islets(f)), key=lambda t: -t[1].sum())
+    for piece, land, at in place_islets(islets, pieces):
+        pieces.append(("islet", piece, at, land, True))
 
     # land of everything that exists, for the sea's shallows and foam
     for name, rgba, (x, y), land, made in pieces:
@@ -227,38 +236,51 @@ def main():
         pb = (ix[k] * S, iy[k] * S)
         dashed(d, pa, pb, 14)
 
-    # half size, then names and the legend
-    view = world.convert("RGB").resize((WW // 2, WH // 2), Image.LANCZOS)
+    # names and the legend, on the half-size picture (and, with --full, on a full-size one too)
+    world = world.convert("RGB")
+    out = ROOT / "check" / "world_now.png"
+    sheet = labelled(world.resize((WW // 2, WH // 2), Image.LANCZOS), pieces, islets_files)
+    sheet.save(out, optimize=True)
+    print("wrote", out.relative_to(ROOT), sheet.size)
+    if "--full" in sys.argv:
+        out = ROOT / "check" / "world_now_full.jpg"
+        sheet = labelled(world, pieces, islets_files)
+        sheet.save(out, quality=92, subsampling=0)
+        print("wrote", out.relative_to(ROOT), sheet.size)
+
+
+def labelled(view, pieces, islets_files):
+    """`view` (the whole big map at any size) with each island's name and state, under a header."""
+    k = view.width / WW          # picture pixels per map pixel
+    u = 2 * k                    # the sizes below are for the half-size picture
     d = ImageDraw.Draw(view)
-    big, small_font = text_font(34), text_font(24)
+    big, small_font = text_font(round(34 * u)), text_font(round(24 * u))
     for name, rgba, (x, y), land, made in pieces:
         if name == "islet":
             continue
         ys, xs = np.nonzero(land)
-        cx = (x + (xs.min() + xs.max()) / 2) / 2
-        ty = (y + ys.min()) / 2 + 10
+        cx = (x + (xs.min() + xs.max()) / 2) * k
+        ty = (y + ys.min()) * k + 10 * u
         label = "Home island" if name == "home" else NEW[name][0]
         status = "done" if made else "still to make"
-        for text, font, dy in [(label, big, 0), (status, small_font, 42)]:
+        for text, font, dy in [(label, big, 0), (status, small_font, 42 * u)]:
             w = d.textlength(text, font=font)
-            box = (cx - w / 2 - 12, ty + dy - 4, cx + w / 2 + 12, ty + dy + font.size + 8)
-            d.rounded_rectangle(box, 10, fill=(34, 34, 38) if dy == 0 else ((46, 125, 50) if made else (120, 90, 40)))
+            box = (cx - w / 2 - 12 * u, ty + dy - 4 * u, cx + w / 2 + 12 * u, ty + dy + font.size + 8 * u)
+            d.rounded_rectangle(box, 10 * u, fill=(34, 34, 38) if dy == 0 else ((46, 125, 50) if made else (120, 90, 40)))
             d.text((cx - w / 2, ty + dy), text, fill="white", font=font)
-    head = Image.new("RGB", (view.width, 96), (34, 34, 38))
+    head = Image.new("RGB", (view.width, round(96 * u)), (34, 34, 38))
     hd = ImageDraw.Draw(head)
-    made_n = sum(1 for n in NEW if (ISLANDS_DIR / f"{n}.png").exists()) + islets_file.exists()
-    hd.text((20, 12), f"Big Sunny Meadow now: {made_n} of {len(NEW) + 1} new island pictures done",
-            fill="white", font=text_font(36))
-    islets_note = ("The small islets are placed automatically, for this picture only." if islets_file.exists()
+    made_n = sum(1 for n in NEW if (ISLANDS_DIR / f"{n}.png").exists()) + bool(islets_files)
+    hd.text((20 * u, 12 * u), f"Big Sunny Meadow now: {made_n} of {len(NEW) + 1} new island pictures done",
+            fill="white", font=text_font(round(36 * u)))
+    islets_note = ("The small islets are placed automatically, for this picture only." if islets_files
                    else "The islets (a sheet of small islands) have no place yet.")
-    hd.text((20, 58), "Faint = concept picture of an island still to make.  Dashed = a bridge to build.  " + islets_note,
-            fill=(210, 210, 210), font=text_font(22))
+    hd.text((20 * u, 58 * u), "Faint = concept picture of an island still to make.  Dashed = a bridge to build.  "
+            + islets_note, fill=(210, 210, 210), font=text_font(round(22 * u)))
     sheet = Image.new("RGB", (view.width, view.height + head.height))
     sheet.paste(head, (0, 0))
     sheet.paste(view, (0, head.height))
-    out = ROOT / "check" / "world_now.png"
-    sheet.save(out, optimize=True)
-    print("wrote", out.relative_to(ROOT), sheet.size)
+    return sheet
 
 
 if __name__ == "__main__":
