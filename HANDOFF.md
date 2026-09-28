@@ -6,14 +6,17 @@ The folder is also on GitHub now: `paper-rockets/pixel-world`, work branch `clau
 
 ## Right now
 
-**The first Codex island came back and needs fixes. The user decides: send the fix request to Codex, or approve it as it is.**
+**The first Codex island is fixed in code. Waiting for the user: approve it, or let Codex redraw it.**
 
-- Codex delivered `source_art/archipelago/ground/sw_campfire.png`. It was checked on 2026-09-28 with `tools/review_island.py`; the picture is `check/review_sw_campfire.png`.
-  - **Good:** the layout (round clearing, path from the north shore, stairs down the south cliff, beach), the island's size (830 × 719), the sea around it, ground only, the view and the pixel size. Water and beach sand colours match.
-  - **Doesn't match:** the grass is a stronger green (`#B0E02C`, home `#BBE056`) and one flat colour with no texture; the cliffs are round orange boulders (home: flat tan slabs with thin cracks); the path is more orange; the water is one flat blue with no shallow band or ripples; the path is about 40 px wide and the stairs about 50 px, only as wide as the capybara (50 px). Home paths are 60–75 px and the dock walkway is 80 px.
-- The fix request, ready to paste into Codex, is `concepts/archipelago/CODEX_FIX_1_sw_campfire.md`. Codex saves a new file, `sw_campfire_v2.png`, and stops.
-- `concepts/archipelago/CODEX_PROMPT.md` now has the palette measured from `tiny_map.png` (its old cliff colours were too orange), the cliff shape, a texture rule, and the real path and stair widths, so the other islands start right.
-- **Next step:** when `sw_campfire_v2.png` arrives, run `python tools/review_island.py source_art/archipelago/ground/sw_campfire_v2.png`, look at `check/review_sw_campfire_v2.png`, and tell the user what matches and what doesn't.
+- Codex delivered `source_art/archipelago/ground/sw_campfire.png`. The check (`tools/review_island.py`, picture `check/review_sw_campfire.png`) found 6 problems:
+  - **Good:** the layout (round clearing, path from the north shore, stairs down the south cliff, beach), the island's size (830 × 719), the sea around it, ground only, the view and the pixel size.
+  - **Didn't match:** the grass was a stronger green (`#B0E02C`, home `#BBE056`) and one flat colour; the cliffs were round orange boulders (home: flat tan slabs with thin cracks); the path was more orange; the water was one flat blue; the path was about 40 px wide and the stairs about 50 px, only as wide as the capybara (50 px). Home paths are 60–75 px and the dock walkway is 80 px.
+- The user asked whether Claude could fix it instead of Codex. **`tools/match_island.py` fixed all of it except the cliff blocks' shape:** `public/world/islands/sw_campfire.png`, before/after in `check/match_sw_campfire.png`. It passes every check (`check/review_sw_campfire_matched.png`). The cliffs are now the home island's tan, but still Codex's rounded blocks rather than flat slabs. Rebuilding them from the home island's slabs was tried and looked worse (streaky), so it was dropped.
+- Two Codex messages are ready, and the user picks one:
+  - approve the fix: `concepts/archipelago/CODEX_2_next_island.md` (skip the redraw, make `se_meadow.png` next with the updated rules)
+  - have Codex redraw: `concepts/archipelago/CODEX_FIX_1_sw_campfire.md` (makes `sw_campfire_v2.png`; then run `match_island.py` and `review_island.py` on it too)
+- `concepts/archipelago/CODEX_PROMPT.md` now has the palette measured from `tiny_map.png` (its old cliff colours were too orange), the cliff shape, a texture rule, and the real path and stair widths.
+- **Next step:** when a new Codex picture arrives, run `review_island.py` on it, then `match_island.py`, then `review_island.py` on the result, and show the user the before/after.
 - The game itself is the normal small Sunny Meadow and works. Both published links were updated on 2026-09-28 with the hiding-spot wiggle fix (Lost Ducklings version 9, Orange Garden version 5).
 
 See "Big Sunny Meadow" below for the full plan.
@@ -70,6 +73,20 @@ python tools/review_island.py source_art/archipelago/ground/<name>.png   # -> ch
 
 It compares each kind of ground (grass, path, beach sand, cliff face, water) with the home island (colour, colour strength, texture), checks the island's size and the sea around it, and measures how wide the paths are. The picture shows both islands where they are planned in the big map, close-ups next to the same kind of ground on the home island, the capybara on the narrowest path, and colour swatches. It needs Pillow, numpy, scipy and OpenCV (in the cloud: `pip install pillow numpy scipy opencv-python-headless`).
 
+**Fixing new island art from Codex** (about a minute per island):
+
+```bash
+python tools/match_island.py source_art/archipelago/ground/<name>.png          # -> public/world/islands/<name>.png + check/match_<name>.png
+python tools/review_island.py public/world/islands/<name>.png                  # -> check/review_<name>_matched.png
+python tools/match_island.py source_art/archipelago/ground/<name>.png --masks  # -> check/masks_<name>.png (which pixel is which ground)
+```
+
+- Keeps every shape Codex drew. Recolours grass, path, beach, cliffs and stairs onto the home island's shades.
+- Replaces the flat grass, path and open water with the home island's own texture, sewn from small overlapping pieces of `tiny_map.png`. The foam and bright shallows along the shore are painted like the big map's sea.
+- Saves the island's piece for the big map: its land plus its shore water, fading out by 80 px.
+- Per island settings go in `ISLANDS` at the top of the file: boxes around stairs (they can't be told from cliffs by colour), how far to widen the paths, and how wide to make the stairs. Check `--masks` for a new island first.
+- Not handled yet: ponds and streams (inland water is taken for land), and ground the home island doesn't have (like tilled soil). Add those before running it on `w_caves_pinktree`, `ne_pond` or `n_orchard`.
+
 **Publishing:** do this for both pages after every change, because they share code.
 
 ```bash
@@ -102,6 +119,8 @@ Then publish with the Artifact tool: `file_path` = that `index.html`, `root` = `
 | `tools/pixelate.py` | Re-draws sprites on the islands' 2-pixel grid (`pixelate_mode` keeps eyes, flowers and outlines) |
 | `tools/build_world.py`, `tools/world_paint.py` | Claude's big-map generator (see below). The ground painting was rejected; the sea, the blending and the object placement are reusable. |
 | `tools/review_island.py` | Checks a Codex island picture against the home island and makes `check/review_<name>.png` (see "Checking new island art") |
+| `tools/match_island.py` | Makes a Codex island picture match the home island (see "Fixing new island art") |
+| `public/world/islands/` | Matched island pieces for the big map (made by `tools/match_island.py`). Not used by the game yet. |
 | `concepts/archipelago/` | The chosen concept, one reference crop per island, `CODEX_PROMPT.md`, and the fix requests (`CODEX_FIX_*.md`) |
 | `concepts/codex_attempt/` | Codex's broken 10x map, kept only for the record |
 | `AGENTS.md` | Codex's own instruction file. Codex also works in this folder. |
@@ -119,6 +138,7 @@ Then publish with the Artifact tool: `file_path` = that `index.html`, `root` = `
 9. **Codex edits this folder too.** It rewrote `src/PlayScene.js` on 2026-09-28. Before editing, check file dates for recent changes, never work on the same files at the same time, and tell Codex to only add files in its own folder.
 10. **Fading one picture's water into another sea:** make the outer water see-through in a dither pattern on the art-pixel grid (2 x 2 map pixels), over about 44 map pixels from the edge. The join disappears completely (`public/world/home.webp`, made in `build_world.py`). Land cut off at a picture's edge needs a small cap of new land.
 11. **Codex doesn't follow bare numbers or palettes closely.** Asked for 90–110 px paths, it drew about 40, and it painted stronger colours than the palette it was given. Give every size a thing to match in `tiny_map.png` ("as wide as the path from the house to the dock"), and measure what comes back with `tools/review_island.py` instead of judging by eye.
+12. **Fix Codex's colours and texture in code, not its shapes.** Recolouring and sewing texture from the home island's own pixels match well; that isn't the rejected "ground painted in code", because every textured pixel comes from `tiny_map.png`. Widening paths and stairs also works. Redrawing shapes doesn't: rebuilding the cliffs from the home island's slabs came out streaky. Ask Codex for shapes.
 
 ## Known small issues
 
@@ -164,6 +184,8 @@ Then publish with the Artifact tool: `file_path` = that `index.html`, `root` = `
 1. **Island pictures:**
    - Cut each one to its land plus about 60 px of water.
    - Fade the water edge into the sea like `home.webp`.
+   - `tools/match_island.py` already does both (fading out by 80 px) and matches the colours, so this step is mostly done for each island that comes through it.
+   - The sea between the islands should be sewn from the home island's open water too, like the islands' water (`quilt` in `match_island.py`), so the pieces fade into the same water.
    - Work out where you can walk from the colours (grass, sand and path yes; water and cliff faces no), adding stairs by hand.
    - Watch texture memory on the Tab S6 Lite: several 2x island pictures are heavy, so store new islands no bigger than they need to be.
 2. **Sea:** reuse the sea painter from `build_world.py` for the water between the islands.
