@@ -26,9 +26,10 @@ The current island stays exactly as it is. You are painting the NEW islands arou
 ## Style rules for every picture
 
 - **View:** the same as `tiny_map.png`, a top-down 3/4 view like a classic top-down RPG. The ground is seen from straight above, and upright surfaces face the viewer (south). No perspective, no tilt, no rotation, no fisheye.
-- **Cliff faces:** only below the bottom (south) edge of raised ground, 30–40 px tall, made of rounded stone blocks in two rows, with grass hanging over the top edge. On left and right edges, only a thin face of 8–14 px. On top (north) edges, no face: just the dark grass edge and foam.
+- **Cliff faces:** only below the bottom (south) edge of raised ground, 30–50 px tall, made of flat-fronted, squarish tan stone slabs side by side, split by thin dark vertical cracks, with a faint lighter ledge line across them and grass hanging over the top edge, exactly like the cliffs in `tiny_map.png`. No round bulging boulders, no orange, no dark red outlines. On left and right edges, only a thin face of 8–14 px. On top (north) edges, no face: just the dark grass edge and foam.
+- **Texture:** like `tiny_map.png`, no big area of grass or water is one flat colour. Grass has small lighter and darker patches and lots of tiny tufts and blades all over. Water has a light shallow band along every shore, ripple lines, and a few darker patches further out.
 - **Light:** from the top-left. Lit edges are top-left, and shade falls to the bottom-right.
-- **Pixel art:** chunky pixel art with 1 art pixel = 2 × 2 picture pixels, exactly like `tiny_map.png`. Hard edges, flat shading in 2–4 steps per material, and small dark outlines. No blur, no soft gradients, no glow, no film grain, no JPEG noise.
+- **Pixel art:** chunky pixel art with 1 art pixel = 2 × 2 picture pixels, exactly like `tiny_map.png`. Hard edges, shading in 2–4 colour steps per material, and small dark outlines. No blur, no soft gradients, no glow, no film grain, no JPEG noise.
 - **Scale** (same as `tiny_map.png`):
 
 | Thing | Size in picture pixels |
@@ -40,19 +41,21 @@ The current island stays exactly as it is. You are painting the NEW islands arou
 | Big round tree | about 200 wide × 190 tall |
 | Bush | 70–90 wide |
 | Rock | 50–60 wide |
-| Main path | 90–110 wide |
-| Side path | 60–80 wide |
+| Main path | about 70 wide, like `tiny_map.png`'s path from the house to the dock |
+| Side path | at least 60 wide (the capybara must have room on both sides) |
+| Stairs in a cliff | about 80 wide, like the dock's walkway in `tiny_map.png` |
 | Beach strip below a cliff | 20–60 tall |
 | Foam line at the shore | 2–4 |
 
-- **Palette:** use these colours (sampled from `tiny_map.png`). Small in-between shades are fine; no new hues.
+- **Palette:** use these colours (measured from `tiny_map.png`). Small in-between shades are fine; no new hues, and nothing brighter or stronger than these.
 
 | Use | Colours |
 |---|---|
-| Grass | `#BDE252` main · `#C6E64F` sunlit · `#B0DA60` soft shade · `#9CCD47` darker patches · `#7FB33F` clover and tufts · `#638847` dark edge line |
-| Paths and sand | `#FDDA9E` main · `#FCE4B4` light sand · `#F3E79D` sunlit sand · `#ECD1A5` path edges and shaded sand |
-| Cliffs and earth | `#E7A766` cliff top edge · `#D48D6C` and `#CC8552` cliff face · `#986A59` cliff shade · `#824F45` cracks and cliff foot |
-| Water | `#4CC5E8` main · `#45AAD6` deeper · `#5CD9F5` shallows · `#73E7FB` and `#97F0FB` ripple lines · `#F3F5E6` foam |
+| Grass | `#BBE056` main · `#CCE266` lighter patches · `#A7D354` soft shade · `#8CC652` and `#75B34E` tufts and clover · `#5CA357` dark edge line |
+| Paths | `#FCD99C` main · `#FAD190` and `#F5CB85` pebbles and edges |
+| Beach sand | `#FDE4B2` main · `#FCF4DB` light · `#F6C392` shaded by a cliff |
+| Cliffs | `#D7A782` light face · `#C49679` main face · `#B2856E` shade · `#9C725D` deep shade · `#815D4C` cracks, outline and cliff foot · `#E2BE98` small highlights |
+| Water | `#4FC6E8` sea · `#47ABD7` darker patches · `#6EE4FA` ripple dashes · `#55D5F2` shallow band along the shore · `#7EE9FB` and `#B3F3FB` ripple lines in the shallows · `#F3F5E6` foam |
 | Stone | `#738381` stone · `#2E2F34` stone outline |
 | Outlines on pieces | leaves `#0C3C1C` · stone `#1C1C24` · wood `#34140C` |
 
@@ -70,7 +73,7 @@ Each picture holds one island only, surrounded by plain open sea (main water wit
 | File | Picture size | Island size | What is on it | Bridge landings |
 |---|---|---|---|---|
 | `w_caves_pinktree.png` | 1086 × 1448 (tall) | about 950 × 1350 | References: `ref_nw_caves.png` (north part) and `ref_w_pinktree.png` (south part), joined as one island. North part: a raised upper grass level with a tall cliff face holding **two dark cave openings**, and a notch where a waterfall will pour down into a **pond** on the lower level (paint the pond and its foam, not the falling water). South part: open grass where the pink tree will stand, and **wooden stairs down a cliff** to a small beach on the west side. Paths join everything. | East side, upper third (to the north island) · East side, lower third (to the home island) · South side (to the campfire island) |
-| `sw_campfire.png` | 1448 × 1086 | about 850 × 750 | Reference: `ref_sw_campfire.png`. A round flat clearing for a campfire (bare earth `#ECD1A5`, about 140 px across), a path, **wooden stairs down the south cliff** to a curved sand beach along the south shore. | North side (to the west island) |
+| `sw_campfire.png` | 1448 × 1086 | about 850 × 750 | Reference: `ref_sw_campfire.png`. A round flat clearing for a campfire (bare path-coloured earth `#FCD99C`, about 140 px across), a path, **wooden stairs down the south cliff** to a curved sand beach along the south shore. | North side (to the west island) |
 | `n_orchard.png` | 1448 × 1086 | about 1300 × 900 | Reference: `ref_n_orchard.png`. A wide grassy island for an orchard: open grass for rows of fruit trees; a vegetable garden area with **two tilled soil beds** (flat brown rows, about 150 × 70 px each, no plants); a winding main path from the west shore to the east shore with a branch south. | West side (to the west island) · East side (to the north-east island) |
 | `ne_pond.png` | 1086 × 1448 (tall) | about 950 × 1300 | Reference: `ref_ne_pond.png`. Upper grass level at the north, **wooden stairs** down to the middle level, a small **pond** (about 200 × 120 px), a path to **wooden stairs down to a sandy beach** in the south-east corner (a rowing boat and dock will be placed there). | West side (to the north island) · South side (to the south-east island) |
 | `se_meadow.png` | 1448 × 1086 | about 1300 × 950 | Reference: `ref_se_meadow.png`. A big meadow island: open grass (a big pink tree and a gate will be placed), a winding path, a **long curved beach** along the south shore (a dock will be placed there), and a small sandy inlet on the east side. | North side (to the north-east island) · West side (to the home island) |
@@ -95,7 +98,7 @@ For animation frames: every frame has the same picture size, the object stays in
 | `bridge_v_mid.png` | 110 × 100 | A middle section of the up–down bridge. It must repeat seamlessly top to bottom. |
 | `bridge_v_end_top.png` | 110 × 40 | The top end of the up–down bridge, with its posts. |
 | `bridge_v_end_bottom.png` | 110 × 40 | The bottom end of the up–down bridge, with its posts. |
-| `waterfall_s_1.png` to `_4.png` | 64 × 96 each | A small waterfall: a ribbon of water (`#4CC5E8` with `#97F0FB` and `#F3F5E6` streaks) pouring straight down from a flat top edge. The streaks move down a quarter of the height each frame, so the 4 frames loop smoothly. |
+| `waterfall_s_1.png` to `_4.png` | 64 × 96 each | A small waterfall: a ribbon of water (`#4FC6E8` with `#B3F3FB` and `#F3F5E6` streaks) pouring straight down from a flat top edge. The streaks move down a quarter of the height each frame, so the 4 frames loop smoothly. |
 | `waterfall_t_1.png` to `_4.png` | 72 × 150 each | A tall waterfall, same style, 4 looping frames. |
 | `splash_1.png` to `_4.png` | 100 × 40 each | White foam splash and ripples where a waterfall hits the pool, 4 looping frames. |
 | `campfire_1.png` to `_4.png` | 64 × 64 each | A ring of 7–8 grey stones, three crossed logs, and small flames (`#FCE46C`, `#F7A33A`, `#E4572E`) that flicker across the 4 frames. The stones and logs don't move. |
