@@ -7,6 +7,7 @@ Run from the game folder:  python tools/world_preview.py   ->  check/world_now.p
   place from tools/review_island.py's PLANNED
 - islands still to come: their concept pictures, faint, in their planned places
 - the planned bridges as dashed lines, between the nearest shores of each pair of islands
+- the islets (public/world/islands/islets.png), each placed in open sea for this picture only
 - the sea between the islands, sewn from the home island's open water, like the pieces' open water
 The picture is half size (the big map is 4608 x 3456), with names and a short legend.
 """
@@ -104,6 +105,58 @@ def open_sea():
     return quilt(home, ok, WH // 2, WW // 2, block=24, overlap=6, tries=300, seed=7)
 
 
+def split_islets(path):
+    """Each islet of the matched islets picture as its own piece (its land and its own shore water),
+    biggest first."""
+    rgba = np.array(Image.open(path).convert("RGBA"))
+    land = ndimage.binary_opening((rgba[..., 3] == 255) & ~water_of(rgba[..., :3]), iterations=2)
+    lab, n = ndimage.label(land)
+    sizes = ndimage.sum(land, lab, range(1, n + 1))
+    out = []
+    for i in 1 + np.flatnonzero(sizes >= 2000):
+        mine = lab == i
+        near = ndimage.distance_transform_edt(~mine) <= 84
+        ys, xs = np.nonzero(near)
+        box = (slice(ys.min(), ys.max() + 1), slice(xs.min(), xs.max() + 1))
+        piece = rgba[box].copy()
+        piece[..., 3] = np.where(near[box], piece[..., 3], 0)
+        out.append((piece, mine[box]))
+    return sorted(out, key=lambda t: -t[1].sum())
+
+
+def place_islets(islets, pieces, q=8):
+    """For this picture only (the islets have no planned place yet): put each islet, biggest first,
+    in the most open sea left, clear of every island and of the boat's route south of the home dock."""
+    h, w = WH // q, WW // q
+    busy = np.zeros((h, w), bool)
+    for name, rgba, (x, y), land, made in pieces:
+        ys, xs = np.nonzero(land[::q, ::q])
+        ys, xs = ys + y // q, xs + x // q
+        ok = (ys >= 0) & (xs >= 0) & (ys < h) & (xs < w)
+        busy[ys[ok], xs[ok]] = True
+    busy = ndimage.binary_dilation(busy, iterations=160 // q)
+    bx, by = HOME_AT[0] + 905, HOME_AT[1] + 950            # the home dock: the boat rows 330 px south
+    busy[(by - 60) // q:(by + 420) // q, (bx - 120) // q:(bx + 120) // q] = True
+    placed = []
+    for piece, land in islets:
+        fp = ndimage.binary_dilation(land[::q, ::q], iterations=60 // q)
+        fh, fw = fp.shape
+        free = ~ndimage.binary_dilation(busy, structure=fp[::-1, ::-1])
+        free[: fh // 2 + 1] = free[-(fh - fh // 2) - 1:] = False
+        free[:, : fw // 2 + 1] = free[:, -(fw - fw // 2) - 1:] = False
+        if not free.any():
+            continue
+        room = np.where(free, ndimage.distance_transform_edt(~busy), -1)
+        cy, cx = np.unravel_index(int(np.argmax(room)), room.shape)
+        top, left = cy - fh // 2, cx - fw // 2
+        placed.append((piece, land, (left * q, top * q)))
+        grown = ndimage.binary_dilation(np.pad(fp, 160 // q), iterations=160 // q)
+        y0, x0 = top - 160 // q, left - 160 // q
+        sy, sx = slice(max(0, y0), min(h, y0 + grown.shape[0])), slice(max(0, x0), min(w, x0 + grown.shape[1]))
+        busy[sy, sx] |= grown[sy.start - y0:sy.stop - y0, sx.start - x0:sx.stop - x0]
+    return placed
+
+
 def dashed(d, a, b, width, dash=40, gap=26):
     (x0, y0), (x1, y1) = a, b
     length = float(np.hypot(x1 - x0, y1 - y0))
@@ -138,6 +191,11 @@ def main():
         else:
             rgba, land = ghost(name, size)
             pieces.append((name, rgba, at, land, False))
+
+    islets_file = ISLANDS_DIR / "islets.png"
+    if islets_file.exists():
+        for piece, land, at in place_islets(split_islets(islets_file), pieces):
+            pieces.append(("islet", piece, at, land, True))
 
     # land of everything that exists, for the sea's shallows and foam
     for name, rgba, (x, y), land, made in pieces:
@@ -174,6 +232,8 @@ def main():
     d = ImageDraw.Draw(view)
     big, small_font = text_font(34), text_font(24)
     for name, rgba, (x, y), land, made in pieces:
+        if name == "islet":
+            continue
         ys, xs = np.nonzero(land)
         cx = (x + (xs.min() + xs.max()) / 2) / 2
         ty = (y + ys.min()) / 2 + 10
@@ -186,11 +246,13 @@ def main():
             d.text((cx - w / 2, ty + dy), text, fill="white", font=font)
     head = Image.new("RGB", (view.width, 96), (34, 34, 38))
     hd = ImageDraw.Draw(head)
-    made_n = sum(1 for p in pieces if p[4]) - 1
+    made_n = sum(1 for n in NEW if (ISLANDS_DIR / f"{n}.png").exists()) + islets_file.exists()
     hd.text((20, 12), f"Big Sunny Meadow now: {made_n} of {len(NEW) + 1} new island pictures done",
             fill="white", font=text_font(36))
-    hd.text((20, 58), "Faint = concept picture of an island still to make.  Dashed = a bridge to build.  "
-            "The islets (a sheet of small islands) have no place yet.", fill=(210, 210, 210), font=text_font(22))
+    islets_note = ("The small islets are placed automatically, for this picture only." if islets_file.exists()
+                   else "The islets (a sheet of small islands) have no place yet.")
+    hd.text((20, 58), "Faint = concept picture of an island still to make.  Dashed = a bridge to build.  " + islets_note,
+            fill=(210, 210, 210), font=text_font(22))
     sheet = Image.new("RGB", (view.width, view.height + head.height))
     sheet.paste(head, (0, 0))
     sheet.paste(view, (0, head.height))

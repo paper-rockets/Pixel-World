@@ -80,23 +80,26 @@ def materials(img):
     white = (v > 0.88) & (s < 0.12)
     water = ((h > 170) & (h < 215) & (s > 0.15)) | white
     grass = (h > 55) & (h < 130) & (s > 0.2) & (v > 0.72)
-    sandy = (h > 20) & (h < 55) & (s > 0.12) & (s < 0.56) & (v > 0.86)
+    # sand is yellow-beige (hue above 28); even pale cliff faces are more orange than that
+    sandy = (h > 28) & (h < 55) & (s > 0.12) & (s < 0.56) & (v > 0.86)
     cliff = (h < 40) & (s > 0.25) & (v > 0.35) & (v < 0.95) & ~sandy
     # a path runs between grass: sand bordered mostly by grass is path, and sand bordered mostly by
     # cliffs and sea is beach (a path can run right down to the sea, and paths and beaches can be
     # painted in nearly the same colour, so neither tells them apart)
     beach = np.zeros_like(sandy)
-    path = sandy
+    specks = np.zeros_like(sandy)
     greenish = (h > 55) & (h < 170) & (s > 0.2) & (v > 0.25)  # grass, including its dark edge lines
-    lab, n = ndimage.label(path)
+    lab, n = ndimage.label(sandy)
     for i, sl in enumerate(ndimage.find_objects(lab), 1):
-        sl = tuple(slice(max(0, s.start - 14), s.stop + 14) for s in sl)
+        sl = tuple(slice(max(0, q.start - 14), q.stop + 14) for q in sl)
         part = lab[sl] == i
         # look 5-12 px out, past the thin blend line along a path's edge
         ring = ndimage.binary_dilation(part, iterations=12) & ~ndimage.binary_dilation(part, iterations=5)
         if greenish[sl][ring].mean() < 0.4:
             beach[sl] |= part
-    return {"grass": grass, "path": sandy & ~beach, "sand": beach, "cliff": cliff, "water": water & ~white}
+        elif part.sum() < 400:
+            specks[sl] |= part      # a pale speck in the grass is not a path (match_island.py agrees)
+    return {"grass": grass, "path": sandy & ~beach & ~specks, "sand": beach, "cliff": cliff, "water": water & ~white}
 
 
 def texture(img, mask, win=16):

@@ -478,7 +478,11 @@ def before_after(img, rgba, home, seg):
         y, x = np.unravel_index(int(np.argmax(sc)), sc.shape)
         return int(x), int(y)
     edge = ndimage.binary_dilation(seg["path"], iterations=4) & ndimage.binary_dilation(seg["grass"], iterations=4)
-    rows = [("grass and path", (560, 470), window(edge)),
+    if edge.any():
+        first = ("grass and path", (560, 470), window(edge))
+    else:                                   # no paths (like the islets): just grass
+        first = ("grass", (1022, 440), window(seg["grass"] & ~ndimage.binary_dilation(~seg["grass"], iterations=8)))
+    rows = [first,
             ("cliff and beach", (1150, 700), window(seg["cliff"] | seg["stairs"])),
             ("shore", (60, 660), window(ndimage.binary_dilation(seg["sea"], iterations=6) & seg["beach"]))]
     parts = [top]

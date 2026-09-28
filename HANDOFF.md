@@ -6,17 +6,18 @@ The folder is also on GitHub now: `paper-rockets/pixel-world`, work branch `clau
 
 ## Right now
 
-**2 of the 6 new island pictures are done and matched to the home island. Next: the other four, then the bridges, waterfalls and campfire pieces.**
+**3 of the 6 new island pictures are done and matched to the home island. Next: the other three (each has a pond or soil beds, which `match_island.py` can't handle yet), then the bridges, waterfalls and campfire pieces.**
 
 | Island | Made by | Original check | After `match_island.py` |
 |---|---|---|---|
 | south-west campfire (`sw_campfire`) | Codex | 6 to fix | 0 to fix (cliffs are still Codex's rounded blocks, in the home island's tan) |
 | south-east meadow (`se_meadow`) | ChatGPT image generation | 5 to fix | 0 to fix |
+| islets (`islets`, 8 small islands in one picture) | ChatGPT image generation | 5 to fix | 0 to fix |
 
 - **Campfire** (`check/review_sw_campfire.png`, `check/match_sw_campfire.png`): Codex's grass was too strong and flat, the cliffs round orange boulders, the water flat, and the path (~40 px) and stairs (~50 px) only as wide as the capybara. The user asked whether Claude could fix it instead of Codex: `match_island.py` fixed everything but the rounded cliff blocks. Rebuilding those from the home island's slabs looked worse (streaky), so it was dropped.
 - **Meadow** (`check/review_se_meadow.png`, `check/match_se_meadow.png`): the user was away from Codex and used ChatGPT with `concepts/archipelago/CHATGPT_2_se_meadow.md` and three numbered reference pictures. It came out much closer than Codex's first try: ground only, flat tan slab cliffs, textured grass, wide stairs. It needed stronger colours softened, paths widened from ~46 to ~62 px, and 26 px of sea added around it (the land came within 58 px of the picture's edge). The user's zip (`island_ground_only_complete_set.zip`) also had `se_meadow_alt_no_water.png`: that is a different drawing, not a cut-out of `se_meadow.png` (tall pillar cliffs, a small rock, no stairs, land almost touching the edges). It's kept as a spare and not used.
-- **In progress: the islets**, with ChatGPT: `concepts/archipelago/CHATGPT_3_islets.md` (three numbered reference pictures; ChatGPT hands back a zip with just `islets.png`). Both tools now handle several islands in one picture.
-- **Next islands:** `w_caves_pinktree` (has a pond), `n_orchard` (tilled soil beds), `ne_pond` (a pond) and `islets`. `match_island.py` can't handle ponds or soil yet (see "Fixing new island art"), so either add that first or do `islets` next. Reuse the ChatGPT prompt shape: numbered reference pictures, "picture 1, 2, 3", ground only, the sizes stated against the pictures, and "give it to me as a .zip with just this one picture inside" (the user asked for zips; they come back through the chat as uploads).
+- **Islets** (`check/review_islets.png`, `check/match_islets.png`): ChatGPT with `concepts/archipelago/CHATGPT_3_islets.md`. Eight round grassy islands with slab cliffs and sand rims, close to the style on the first try. They needed softer colours, the home island's water, and 42 px of sea added (land came within 43 px of the edge). The zip (`islets_complete_package_clean.zip`) also had `islets_no_water.png`, though the prompt asked for one picture: the same layout but a different drawing (bigger islands, taller cliffs, wide sand). It's kept as a spare and not used. The islets have no planned place yet; `world_preview.py` scatters them into open sea for the picture only.
+- **Next islands:** `w_caves_pinktree` (has a pond), `n_orchard` (tilled soil beds) and `ne_pond` (a pond). `match_island.py` can't handle ponds or soil yet (see "Fixing new island art"), so add that when the picture comes in, before trusting its output. Reuse the ChatGPT prompt shape: numbered reference pictures, "picture 1, 2, 3", ground only, the sizes stated against the pictures, and "give it to me as a .zip with just this one picture inside" (the user asked for zips; they come back through the chat as uploads).
 - Other prompts on file: `concepts/archipelago/CODEX_2_next_island.md` (the meadow for Codex, with the updated style rules), and `concepts/archipelago/CODEX_FIX_1_sw_campfire.md` (a Codex redraw of the campfire island, if flat-slab cliffs are ever wanted there). `concepts/archipelago/CODEX_PROMPT.md` has the measured palette, the cliff shape, the texture rule, and the real path and stair widths.
 - The game itself is the normal small Sunny Meadow and works. Both published links were updated on 2026-09-28 with the hiding-spot wiggle fix (Lost Ducklings version 9, Orange Garden version 5).
 
@@ -88,7 +89,9 @@ python tools/match_island.py source_art/archipelago/ground/<name>.png --masks  #
 - Saves the island's piece for the big map: its land plus its shore water, fading out by 80 px. If the land comes closer than that to the picture's edge, sea is added all round, and `public/world/islands/<name>.json` says by how much (`pad`: the piece's top-left moves up and left by that much).
 - Grass or path texture that is already close to the home island's is kept; only a flat fill is replaced.
 - Per island settings go in `ISLANDS` at the top of the file: boxes around stairs (they can't be told from cliffs by colour), how far to widen the paths, and how wide to make the stairs. Check `--masks` for a new island first.
-- See the whole map with `python tools/world_preview.py` (about a minute). Its sea is sewn from the home island's open water, as planned for the real map, so the pieces fade into it without a seam.
+- Several islands in one picture work (the islets): both tools keep every island bigger than 2% of the largest, and the check sheet shows a grass close-up when there's no path.
+- Sand is told from pale cliff faces by hue: sand is yellow-beige (hue above 28), while even the palest cliffs are more orange. Pale specks in the grass smaller than 400 px aren't paths.
+- See the whole map with `python tools/world_preview.py` (about a minute). Its sea is sewn from the home island's open water, as planned for the real map, so the pieces fade into it without a seam. The islets picture is cut into single islands and each is dropped into the most open sea, clear of the islands and of the boat's channel.
 - Not handled yet: ponds and streams (inland water is taken for land), and ground the home island doesn't have (like tilled soil). Add those before running it on `w_caves_pinktree`, `ne_pond` or `n_orchard`.
 
 **Publishing:** do this for both pages after every change, because they share code.
@@ -145,7 +148,7 @@ Then publish with the Artifact tool: `file_path` = that `index.html`, `root` = `
 11. **Codex doesn't follow bare numbers or palettes closely.** Asked for 90–110 px paths, it drew about 40, and it painted stronger colours than the palette it was given. Give every size a thing to match in `tiny_map.png` ("as wide as the path from the house to the dock"), and measure what comes back with `tools/review_island.py` instead of judging by eye.
 12. **Fix Codex's colours and texture in code, not its shapes.** Recolouring and sewing texture from the home island's own pixels match well; that isn't the rejected "ground painted in code", because every textured pixel comes from `tiny_map.png`. Widening paths and stairs also works. Redrawing shapes doesn't: rebuilding the cliffs from the home island's slabs came out streaky. Ask Codex for shapes.
 13. **Tell path from beach by what borders the sand, not by its colour.** Sand bordered mostly by grass is path; sand bordered by cliffs and sea is beach. ChatGPT paints the two nearly the same colour, and the old colour split gave different answers from run to run.
-14. **Image generators' "extra versions" can be different drawings.** ChatGPT's "transparent" meadow had other paths, tall pillar cliffs and a rock. Compare every file before using it.
+14. **Image generators' "extra versions" can be different drawings.** ChatGPT's "transparent" meadow had other paths, tall pillar cliffs and a rock, and its "no water" islets had other island shapes. It added the islets one even when asked for a single picture. Compare every file before using it.
 
 ## Known small issues
 
@@ -181,6 +184,7 @@ Then publish with the Artifact tool: `file_path` = that `index.html`, `root` = `
 | north | (1500, 60) |
 | north-east (tall) | (3000, 60) |
 | south-east | (3100, 1560) |
+| islets | not placed yet: cut `public/world/islands/islets.png` into single islands and spread them over open sea |
 
 - **Bridges:** home to west, west to north, north to north-east, north-east to south-east, south-east to home, and west to south-west. That makes loops with no dead ends.
 - **Home island bridge points:** west shore at picture (40, 460) and east shore at (1440, 420). Both are an easy walk from the house. A north bridge would be hidden behind the house, and its area is only reachable the long way round the pen.
